@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery y Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Editar Ticket</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #eef1f5;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 550px;
+            box-shadow: 0 0 10px #bbb;
+            flex-shrink: 0;
+        }
+
+        .form-group {
+            display: flex;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        label {
+            flex: 0 0 40%;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        input, select, textarea {
+            flex: 1;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        select:disabled, input:disabled, textarea:disabled {
+            color: black;
+            background-color: #f5f5f5;
+        }
+
+        button {
+            padding: 0.5rem;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            width: 100%;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .historial {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #bbb;
+            width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .historial h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .botones-center {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .botones-space-between {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form method="POST">
+        {% set deshabilitado = ticket.status == 'Terminado' %}
+        <h2>Ticket {{ ticket.id }}</h2>
+
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select name="status" id="status" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+                <option value="Pendiente" {% if ticket.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="Terminado" {% if ticket.status == 'Terminado' %}selected{% endif %}>Terminado</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <select name="tipo" id="tipo" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+                <option value="Proactivo" {% if ticket.tipo == 'Proactivo' %}selected{% endif %}>Proactivo</option>
+                <option value="Reactivo" {% if ticket.tipo == 'Reactivo' %}selected{% endif %}>Reactivo</option>
+                <option value="Requerimiento" {% if ticket.tipo == 'Requerimiento' %}selected{% endif %}>Requerimiento</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="medio">Medio</label>
+            <select name="medio" id="medio" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+                <option value="Llamada" {% if ticket.medio == 'Llamada' %}selected{% endif %}>Llamada</option>
+                <option value="Correo" {% if ticket.medio == 'Correo' %}selected{% endif %}>Correo</option>
+                <option value="Whatsapp" {% if ticket.medio == 'Whatsapp' %}selected{% endif %}>Whatsapp</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="asunto">Asunto del caso</label>
+            <textarea name="asunto" id="asunto" readonly>{{ ticket.asunto }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="detalle">Detalle</label>
+            <textarea name="detalle" id="detalle" {% if deshabilitado %}readonly{% endif %} required>{{ ticket.detalle }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha_inicio">Fecha Inicio</label>
+            <input type="text" name="fecha_inicio" id="fecha_inicio" readonly value="{{ ticket.fecha_inicio.strftime('%Y-%m-%d %H:%M:%S') }}">
+        </div>
+        {% if ticket.status == 'Terminado' and ticket.fecha_fin %}
+        <div class="form-group">
+            <label for="fecha_fin">Fecha Fin</label>
+            <input type="text" name="fecha_fin" id="fecha_fin" readonly value="{{ ticket.fecha_fin.strftime('%Y-%m-%d %H:%M:%S') }}">
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="pid">PID</label>
+            <input type="text" name="pid" id="pid" value="{{ ticket.pid }}" {% if deshabilitado %}readonly{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="sede">Sede</label>
+            <input type="text" name="sede" id="sede" value="{{ ticket.sede }}" {% if deshabilitado %}readonly{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="cliente">Cliente</label>
+            <select name="cliente" id="cliente" class="select2" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+                {% for c in clientes %}
+                <option value="{{ c.nombre }}" {% if ticket.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="asignado">Asignado a</label>
+            <select name="asignado" id="asignado" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+                {% for i in ingenieros %}
+                <option value="{{ i.id }}" {% if ticket.asignado_id == i.id %}selected{% endif %}>{{ i.nombre }} {{ i.apellido }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="actualizacion">Actualizar comentario</label>
+            <textarea name="actualizacion" id="actualizacion" {% if deshabilitado %}readonly{% endif %}>{{ ticket.actualizacion }}</textarea>
+        </div>
+
+        <div class="{% if deshabilitado %}botones-center{% else %}botones-space-between{% endif %}">
+            {% if not deshabilitado %}
+            <button type="submit" style="flex: 1;">Guardar Cambios</button>
+            {% endif %}
+            <a href="{{ url_for('dashboard_bp.dashboard') }}"
+               style="flex: 1; text-align: center; padding: 0.5rem; background-color: #4CAF50; color: white; border-radius: 4px; text-decoration: none; font-weight: bold;">
+               Volver al Dashboard
+            </a>
+        </div>
+    </form>
+
+    <div class="historial">
+        <h3>Historial de cambios</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Fecha/Hora</th>
+                    <th style="width: 20%;">Usuario</th>
+                    <th style="width: 50%;">Cambio realizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in historial %}
+                <tr>
+                    <td>{{ h.fecha_hora.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ h.usuario.usuario }}</td>
+                    <td>{{ h.cambio.replace('\n', '<br>')|safe }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Selecciona un cliente"
+        });
+    });
+</script>
+</body>
+</html>

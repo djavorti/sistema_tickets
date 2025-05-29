@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- jQuery y Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Crear Ticket</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+        }
+
+        form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            width: 500px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            width: 40%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 60%;
+            padding: 0.5rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <form method="POST">
+        <h2>Crear Nuevo TT</h2>
+
+        <div class="form-group">
+            <label for="id_tt">ID TT</label>
+            <input type="text" name="id_tt" id="id_tt" value="{{ id_tt }}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status</label>
+            <input type="text" name="status" id="status" value="{{ status }}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <select name="tipo" id="tipo" required>
+                <option value="Proactivo">Proactivo</option>
+                <option value="Reactivo">Reactivo</option>
+                <option value="Requerimiento">Requerimiento</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="medio">Medio</label>
+            <select name="medio" id="medio" required>
+                <option value="Whatsapp">Whatsapp</option>
+                <option value="Correo">Correo</option>
+                <option value="Llamada">Llamada</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="asunto">Asunto del caso</label>
+            <textarea name="asunto" id="asunto" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="detalle">Detalle del caso</label>
+            <textarea name="detalle" id="detalle" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha_inicio">Fecha Inicio</label>
+            <input type="text" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="pid">PID (opcional)</label>
+            <input type="text" name="pid" id="pid">
+        </div>
+
+        <div class="form-group">
+            <label for="sede">Sede (opcional)</label>
+            <input type="text" name="sede" id="sede">
+        </div>
+
+        <div class="form-group">
+            <label for="cliente">Cliente</label>
+            <select name="cliente" id="cliente" class="select2" required>
+                {% for c in clientes %}
+                <option value="{{ c['nombre'] }}">{{ c['nombre'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="asignado">Asignado a</label>
+            <select name="asignado" id="asignado" required>
+                {% for i in ingenieros %}
+                <option value="{{ i.nombre }} {{ i.apellido }}">{{ i.nombre }} {{ i.apellido }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="actualizacion">Primera actualización</label>
+            <input type="text" name="actualizacion" id="actualizacion" required>
+        </div>
+
+        <button type="submit">Crear</button>
+    </form>
+    <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Selecciona un cliente"
+        });
+    });
+</script>
+</body>
+</html>
