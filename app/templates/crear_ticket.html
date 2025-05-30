@@ -49,7 +49,7 @@
             padding: 0.5rem 1rem;
             margin-top: 1rem;
             width: 100%;
-            background-color: #4CAF50;
+            background-color: #d32f2f;
             color: white;
             border: none;
             border-radius: 4px;
@@ -64,7 +64,7 @@
 </head>
 <body>
     <form method="POST">
-        <h2>Crear Nuevo TT</h2>
+        <h2>Crear Ticket</h2>
 
         <div class="form-group">
             <label for="id_tt">ID TT</label>
@@ -120,6 +120,11 @@
         </div>
 
         <div class="form-group">
+            <label for="tt_remedy">TT Remedy (opcional)</label>
+            <input type="text" name="tt_remedy" id="tt_remedy">
+        </div>
+
+        <div class="form-group">
             <label for="cliente">Cliente</label>
             <select name="cliente" id="cliente" class="select2" required>
                 {% for c in clientes %}
@@ -128,14 +133,19 @@
             </select>
         </div>
 
+        {% if usuario_logueado.tipo != 'ingeniero' or usuario_logueado.de_turno %}
         <div class="form-group">
             <label for="asignado">Asignado a</label>
             <select name="asignado" id="asignado" required>
                 {% for i in ingenieros %}
-                <option value="{{ i.nombre }} {{ i.apellido }}">{{ i.nombre }} {{ i.apellido }}</option>
+                <option value="{{ i.id }}">{{ i.nombre }} {{ i.apellido }}</option>
                 {% endfor %}
             </select>
         </div>
+        {% else %}
+            <!-- Campo oculto si no tiene permiso para asignar -->
+            <input type="hidden" name="asignado" value="{{ ingenieros[0].id }}">
+        {% endif %}
 
         <div class="form-group">
             <label for="actualizacion">Primera actualización</label>

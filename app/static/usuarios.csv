@@ -1,0 +1,14 @@
+id,nombre,apellido,usuario,password,tipo
+1,Djalmar,Vargas,dvargaso,dvargaso,ingeniero
+2,Luis,Terreros,lterrerh,lterrerh,ingeniero
+3,Sofia,Duchi,rduchi,rduchi,ingeniero
+4,Fulvio,Carrasco,fcarrasc,fcarrasc,ingeniero
+5,Domenica,Lucero,alucero,alucero,ingeniero
+6,Eduardo,Miranda,emirando,emirando,ingeniero
+7,Michael,Cepeda,mcepedav,mcepedav,ingeniero
+8,Leonidas,Benites,lbeniten,lbeniten,ingeniero
+9,John,Arellano,jarellai,jarrellai,ingeniero
+10,Daniela,Diaz,ddiazu,ddiazu,ingeniero
+11,Jose,Kam,jkamz,jkamz,ingeniero
+12,Ryan,Banda,rbanda,rbanda,jefe
+13,Administrador,,admin,admin1,admin

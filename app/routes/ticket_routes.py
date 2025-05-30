@@ -10,6 +10,13 @@ ticket_bp = Blueprint('ticket_bp', __name__)
 
 @ticket_bp.route('/crear_ticket', methods=['GET', 'POST'])
 def crear_ticket():
+    if 'usuario' not in session:
+        flash("Debes iniciar sesión para crear tickets.")
+        return redirect(url_for('auth_bp.login'))
+
+    usuario_logueado = Usuario.query.filter_by(usuario=session['usuario']).first()
+    ingeniero_turno = Usuario.query.filter_by(tipo='ingeniero', de_turno=True).first()
+
     if request.method == 'POST':
         # Recoger datos del formulario
         id_tt = request.form['id_tt']
@@ -20,20 +27,21 @@ def crear_ticket():
         detalle = request.form['detalle']
         pid = request.form['pid']
         sede = request.form['sede']
+        tt_remedy = request.form['tt_remedy']
         actualizacion = request.form['actualizacion']
-
-        # Tiempos
+        cliente_nombre = request.form['cliente']
         fecha_inicio = datetime.now(zona_ecuador)
 
-        # Relaciones
-        cliente_nombre = request.form['cliente']
-        asignado_nombre = request.form['asignado']
-
         cliente = Cliente.query.filter_by(nombre=cliente_nombre).first()
-        asignado = Usuario.query.filter(
-            (Usuario.nombre + " " + Usuario.apellido) == asignado_nombre
-        ).first()
-        usuario_logueado = Usuario.query.filter_by(usuario=session['usuario']).first()
+
+        # Lógica para asignar el ticket:
+        if (usuario_logueado.tipo != 'ingeniero' or usuario_logueado.de_turno):
+            # Ingeniero de turno puede elegir
+            asignado_id = request.form['asignado']
+            asignado = Usuario.query.get(asignado_id)
+        else:
+            # Usuario no es ingeniero de turno: asignar automáticamente
+            asignado = ingeniero_turno
 
         # Crear el nuevo ticket
         nuevo_ticket = Ticket(
@@ -42,6 +50,7 @@ def crear_ticket():
             tipo=tipo,
             medio=medio,
             asunto=asunto,
+            tt_remedy = tt_remedy,
             detalle=detalle,
             fecha_inicio=fecha_inicio,
             pid=pid,
@@ -71,12 +80,13 @@ def crear_ticket():
     nuevo_id_tt = f"{base_id}-{tickets_mes + 1:03}"
 
     return render_template(
-    'crear_ticket.html',
-    id_tt=nuevo_id_tt,
-    status="Pendiente",
-    fecha_inicio=hoy.strftime('%Y-%m-%d %H:%M:%S'),  # Incluye segundos
-    clientes=clientes,
-    ingenieros=ingenieros
+        'crear_ticket.html',
+        id_tt=nuevo_id_tt,
+        status="Pendiente",
+        fecha_inicio=hoy.strftime('%Y-%m-%d %H:%M:%S'),
+        clientes=clientes,
+        ingenieros=ingenieros,
+        usuario_logueado=usuario_logueado  # <-- pasamos esto al template
     )
 
 @ticket_bp.route('/editar_ticket/<ticket_id>', methods=['GET', 'POST'])
@@ -103,6 +113,7 @@ def editar_ticket(ticket_id):
         anterior_cliente = ticket.cliente.nombre if ticket.cliente else ""
         anterior_asignado = f"{ticket.asignado.nombre} {ticket.asignado.apellido}" if ticket.asignado else ""
         anterior_actualizacion = ticket.actualizacion
+        anterior_tt_remedy = ticket.tt_remedy
 
         # Nuevos valores del formulario
         nuevo_status = request.form['status']
@@ -114,6 +125,7 @@ def editar_ticket(ticket_id):
         nuevo_cliente = Cliente.query.filter_by(nombre=request.form['cliente']).first()
         nuevo_asignado = Usuario.query.get(request.form['asignado'])
         nuevo_actualizacion = request.form.get('actualizacion', '').strip()
+        nuevo_tt_remedy = tt_remedy = request.form.get('tt_remedy', '').strip()
 
         # Comparar campos y registrar cambios
         if nuevo_status != anterior_status:
@@ -142,6 +154,10 @@ def editar_ticket(ticket_id):
         if nuevo_sede != anterior_sede:
             cambios.append(f"Sede: '{anterior_sede}' → '{nuevo_sede}'")
             ticket.sede = nuevo_sede
+
+        if nuevo_tt_remedy != anterior_tt_remedy:
+            cambios.append(f"TT Remedy: '{anterior_tt_remedy}' → '{nuevo_tt_remedy}'")
+            ticket.tt_remedy = nuevo_tt_remedy
 
         if nuevo_cliente and nuevo_cliente.nombre != anterior_cliente:
             cambios.append(f"Cliente: '{anterior_cliente}' → '{nuevo_cliente.nombre}'")
@@ -176,3 +192,4 @@ def editar_ticket(ticket_id):
         ingenieros=ingenieros,
         historial=historial
     )
+

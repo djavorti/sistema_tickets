@@ -15,6 +15,7 @@ class Ticket(db.Model):
     asunto = db.Column(db.String(100))
     detalle = db.Column(db.Text)
     sede = db.Column(db.String(100))
+    tt_remedy = db.Column(db.String(100))
 
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'))
     cliente = db.relationship('Cliente', back_populates='tickets')

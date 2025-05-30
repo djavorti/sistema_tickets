@@ -1,0 +1,7 @@
+rm app.db
+rm -rf migrations/
+flask db init
+flask db migrate -m "Migración inicial"
+flask db upgrade
+python -m app.scripts.importar_usuarios
+python -m app.scripts.importar_clientes

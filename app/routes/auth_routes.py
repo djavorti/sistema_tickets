@@ -18,6 +18,8 @@ def login():
 
         if user and user.check_password(password):
             session['usuario'] = user.usuario
+            session['tipo'] = user.tipo
+            session['de_turno'] = user.de_turno
 
             # Registrar sesión activa si no existe
             if not SesionActiva.query.filter_by(usuario_id=user.id).first():
@@ -70,4 +72,6 @@ def logout():
                 db.session.commit()
 
     session.pop('usuario', None)
+    session.pop('tipo', None)
+    session.pop('de_turno', None)
     return redirect(url_for('auth_bp.login'))

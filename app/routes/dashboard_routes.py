@@ -54,6 +54,15 @@ def dashboard():
 
 @dashboard_bp.route('/reasignar_ticket', methods=['POST'])
 def reasignar_ticket():
+    # Verificación de sesión
+    usuario_actual = Usuario.query.filter_by(usuario=session.get('usuario')).first()
+    if not usuario_actual:
+        return jsonify({"error": "Usuario no autenticado"}), 401
+
+    # Solo ingeniero de turno puede reasignar
+    if (usuario_actual.tipo == 'ingeniero' and not usuario_actual.de_turno):
+        return jsonify({"error": "No tienes permisos para reasignar tickets."}), 403
+
     data = request.get_json()
     ticket_id = data.get('ticket_id')
     nuevo_ingeniero = data.get('nuevo_ingeniero')
@@ -77,7 +86,7 @@ def reasignar_ticket():
     if f"{nuevo_asignado.nombre} {nuevo_asignado.apellido}" != anterior_asignado:
         nuevo_historial = Historial(
             ticket_id=ticket.id,
-            usuario=Usuario.query.filter_by(usuario=session['usuario']).first(),
+            usuario=usuario_actual,
             cambio=f"Asignado: '{anterior_asignado}' → '{nuevo_asignado.nombre} {nuevo_asignado.apellido}'",
             fecha_hora=datetime.now(zona_ecuador)
         )
@@ -92,7 +101,19 @@ def historico():
     if 'usuario' not in session:
         return redirect(url_for('auth_bp.login'))
 
-    tickets = Ticket.query.order_by(Ticket.id.desc()).all()
+    desde_str = request.args.get('desde')
+    hasta_str = request.args.get('hasta')
+
+    query = Ticket.query
+    if desde_str:
+        desde = datetime.strptime(desde_str, '%Y-%m-%d')
+        query = query.filter(Ticket.fecha_inicio >= desde)
+    if hasta_str:
+        hasta = datetime.strptime(hasta_str, '%Y-%m-%d')
+        hasta = hasta.replace(hour=23, minute=59, second=59)
+        query = query.filter(Ticket.fecha_inicio <= hasta)
+
+    tickets = query.order_by(Ticket.id.desc()).all()
     clientes = {c.id: c.nombre for c in Cliente.query.all()}
     ingenieros = {i.id: f"{i.nombre} {i.apellido}" for i in Usuario.query.filter_by(tipo='ingeniero').all()}
 
@@ -103,7 +124,19 @@ def descargar_historico():
     if 'usuario' not in session:
         return redirect(url_for('auth_bp.login'))
 
-    tickets = Ticket.query.order_by(Ticket.id.desc()).all()
+    desde_str = request.args.get('desde')
+    hasta_str = request.args.get('hasta')
+
+    query = Ticket.query
+    if desde_str:
+        desde = datetime.strptime(desde_str, '%Y-%m-%d')
+        query = query.filter(Ticket.fecha_inicio >= desde)
+    if hasta_str:
+        hasta = datetime.strptime(hasta_str, '%Y-%m-%d')
+        hasta = hasta.replace(hour=23, minute=59, second=59)
+        query = query.filter(Ticket.fecha_inicio <= hasta)
+
+    tickets = query.order_by(Ticket.id.desc()).all()
 
     data = []
     for t in tickets:
@@ -122,13 +155,12 @@ def descargar_historico():
         })
 
     df = pd.DataFrame(data)
-    ruta_descargas = os.path.join(os.path.expanduser('~'), 'Downloads')
-    archivo_excel = os.path.join(ruta_descargas, 'historico_tickets.xlsx')
+    archivo_excel = '/tmp/historico_tickets.xlsx'
     df.to_excel(archivo_excel, index=False)
 
     return send_file(archivo_excel, as_attachment=True)
 
-@dashboard_bp.route('/ver_ticket/<ticket_id>')
+@dashboard_bp.route('/ver_ticket/<ticket_id>', methods=['POST'])
 def ver_ticket(ticket_id):
     from app.models import Ticket, Cliente, Usuario, Historial
     ticket = Ticket.query.get_or_404(ticket_id)

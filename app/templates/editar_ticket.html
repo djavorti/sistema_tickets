@@ -119,6 +119,75 @@
             gap: 1rem;
             margin-top: 1rem;
         }
+        button {
+    padding: 0.5rem;
+    background-color: #d32f2f; 
+    color: white;
+    border: none;
+    width: 100%;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #5e5e5e; /* gris oscuro al hacer hover */
+}
+
+a[href*="dashboard"] {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #757575; /* gris medio */
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+a[href*="dashboard"]:hover {
+    background-color: #5e5e5e; /* gris oscuro al hacer hover */
+}
+
+.historial th {
+    background-color: #424242; /* gris oscuro */
+    color: white;
+}
+.btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  height: 44px;
+  line-height: 1;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0; /* eliminar padding innecesario para igualar altura */
+}
+
+.btn-red:hover {
+  background-color: #a00000;
+}
+
+
+/* Para alinear bien ambos dentro del contenedor */
+.botones-space-between,
+.botones-center {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
     </style>
 </head>
 <body>
@@ -180,6 +249,11 @@
         </div>
 
         <div class="form-group">
+            <label for="tt_remedy">TT Remedy</label>
+            <input type="text" name="tt_remedy" id="tt_remedy" value="{{ ticket.tt_remedy }}" {% if deshabilitado %}readonly{% endif %}>
+        </div>
+
+        <div class="form-group">
             <label for="sede">Sede</label>
             <input type="text" name="sede" id="sede" value="{{ ticket.sede }}" {% if deshabilitado %}readonly{% endif %}>
         </div>
@@ -194,13 +268,21 @@
         </div>
 
         <div class="form-group">
-            <label for="asignado">Asignado a</label>
-            <select name="asignado" id="asignado" {% if deshabilitado %}disabled style="color: black; background-color: #fff;"{% endif %} required>
+        <label for="asignado">Asignado a</label>
+        {% if (session['tipo'] != 'ingeniero' or session['de_turno']) and not deshabilitado %}
+            <select name="asignado" id="asignado" required>
                 {% for i in ingenieros %}
                 <option value="{{ i.id }}" {% if ticket.asignado_id == i.id %}selected{% endif %}>{{ i.nombre }} {{ i.apellido }}</option>
                 {% endfor %}
             </select>
-        </div>
+        {% else %}
+            <select name="asignado" id="asignado" disabled style="color: black; background-color: #f5f5f5;">
+                {% for i in ingenieros %}
+                <option value="{{ i.id }}" {% if ticket.asignado_id == i.id %}selected{% endif %}>{{ i.nombre }} {{ i.apellido }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+    </div>
 
         <div class="form-group">
             <label for="actualizacion">Actualizar comentario</label>
@@ -208,14 +290,15 @@
         </div>
 
         <div class="{% if deshabilitado %}botones-center{% else %}botones-space-between{% endif %}">
-            {% if not deshabilitado %}
-            <button type="submit" style="flex: 1;">Guardar Cambios</button>
-            {% endif %}
-            <a href="{{ url_for('dashboard_bp.dashboard') }}"
-               style="flex: 1; text-align: center; padding: 0.5rem; background-color: #4CAF50; color: white; border-radius: 4px; text-decoration: none; font-weight: bold;">
-               Volver al Dashboard
-            </a>
-        </div>
+  {% if not deshabilitado %}
+  <div style="flex: 1;">
+    <button type="submit" class="btn-red">Guardar Cambios</button>
+  </div>
+  {% endif %}
+  <div style="flex: 1;">
+    <a href="{{ url_for('dashboard_bp.dashboard') }}" class="btn-red">Volver al Dashboard</a>
+  </div>
+</div>
     </form>
 
     <div class="historial">

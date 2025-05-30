@@ -10,21 +10,28 @@
         body { font-family: Arial; margin: 2rem; background: #eef1f5; }
         table { width: 100%; }
         .btn-export {
-            background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;
+            background-color: #d32f2f; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;
             margin-bottom: 1rem;
         }
         .btn-export:hover {
-            background-color: #45a049;
+            background-color: #d32f2f;
         }
     </style>
 </head>
 <body>
     <h2>Histórico de Tickets</h2>
-    <a href="{{ url_for('dashboard_bp.dashboard') }}"
-   style="display: inline-block; margin-bottom: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-   ← Volver al Dashboard
-    </a>
+    <a href="{{ url_for('dashboard_bp.dashboard') }}"class=btn-export>← Volver al Dashboard</a>
+    <p></p>
+    <form method="get" action="{{ url_for('dashboard_bp.historico') }}" style="margin-bottom: 20px;">
+    <label for="desde">Desde:</label>
+    <input type="date" id="desde" name="desde" value="{{ request.args.get('desde', '') }}">
+    <label for="hasta">Hasta:</label>
+    <input type="date" id="hasta" name="hasta" value="{{ request.args.get('hasta', '') }}">
+    <button type="submit">Filtrar</button>
     <button id="btn-export" class="btn-export">Descargar Excel</button>
+    </form>
+
+
     <table id="tablaTickets" class="display">
         <thead>
             <tr>
@@ -37,6 +44,7 @@
                 <th>Fecha Fin</th>
                 <th>PID</th>
                 <th>Sede</th>
+                <th>TT Remedy</th>
                 <th>Cliente</th>
                 <th>Asignado</th>
                 <th>Acción</th>
@@ -54,6 +62,7 @@
                 <td>{{ t.fecha_fin.strftime('%Y-%m-%d %H:%M:%S') if t.fecha_fin else '' }}</td>
                 <td>{{ t.pid }}</td>
                 <td>{{ t.sede }}</td>
+                <td>{{ t.tt_remedy }}</td>
                 <td>{{ clientes[t.cliente_id] if t.cliente_id in clientes else '' }}</td>
                 <td>{{ ingenieros[t.asignado_id] if t.asignado_id in ingenieros else '' }}</td>
                 <td>
@@ -76,9 +85,15 @@
     });
 </script>
 <script>
-    document.getElementById('btn-export').addEventListener('click', function() {
-        window.location.href = "{{ url_for('dashboard_bp.descargar_historico') }}";
-    });
+document.getElementById('btn-export').addEventListener('click', function () {
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
+    let url = "{{ url_for('dashboard_bp.descargar_historico') }}";
+    if (desde || hasta) {
+        url += `?desde=${desde}&hasta=${hasta}`;
+    }
+    window.location.href = url;
+});
 </script>
 </body>
 </html>
