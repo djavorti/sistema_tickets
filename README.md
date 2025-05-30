@@ -7,4 +7,4 @@ flask db migrate -m "Migración inicial"
 flask db upgrade
 python -m app.scripts.importar_usuarios
 python -m app.scripts.importar_clientes
-flash run
+flash run --host=0.0.0.0 --port=5000
