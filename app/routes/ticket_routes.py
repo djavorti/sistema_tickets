@@ -101,6 +101,9 @@ def editar_ticket(ticket_id):
     historial = Historial.query.filter_by(ticket_id=ticket_id).order_by(Historial.fecha_hora.desc()).all()
 
     if request.method == 'POST':
+        
+        print(request.form)  # Ver qué datos llegan
+
         cambios = []
 
         # Valores anteriores
@@ -123,9 +126,13 @@ def editar_ticket(ticket_id):
         nuevo_pid = request.form['pid']
         nuevo_sede = request.form['sede']
         nuevo_cliente = Cliente.query.filter_by(nombre=request.form['cliente']).first()
-        nuevo_asignado = Usuario.query.get(request.form['asignado'])
+        asignado_id = request.form.get('asignado')
+        if asignado_id:
+            nuevo_asignado = Usuario.query.get(asignado_id)
+        else:
+            nuevo_asignado = ticket.asignado  # Mantener el asignado anterior si no viene en el formulario
         nuevo_actualizacion = request.form.get('actualizacion', '').strip()
-        nuevo_tt_remedy = tt_remedy = request.form.get('tt_remedy', '').strip()
+        nuevo_tt_remedy = request.form.get('tt_remedy', '').strip()
 
         # Comparar campos y registrar cambios
         if nuevo_status != anterior_status:
