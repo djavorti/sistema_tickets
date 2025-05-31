@@ -157,6 +157,21 @@
   .primero {
       background-color: #fff3cd !important; /* amarillo suave */
     }
+  /* Tooltip personalizado */
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: #333;
+  color: white;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  z-index: 999;
+  white-space: pre-wrap; /* Permite saltos de línea */
+  max-width: 400px; /* Aumenta si quieres mostrar más contenido */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -192,7 +207,7 @@
 
 <div class="fecha-hora">
   <h1>TICKETS CNOC</h1>
-  <p>{{ fecha_hoy }} – <span id="hora-actual"></span></p>
+  <p>{{ fecha_hoy }} – <span id="hora-actual">{{ hora_actual }}</span></p>
 </div>
 
 {% if session.get('usuario') %}
@@ -225,17 +240,17 @@
         {% for ticket in tickets_ordenados %}
           {% set clase = 'pendiente' if ticket.status == 'Pendiente' else 'terminado' %}
           <div
-            class="cuadro {{ clase }} {% if session.get('usuario') %}editable{% endif %}"
-            data-status="{{ ticket.status }}"
-            {% if session.get('usuario') %}
-              draggable="true"
-              ondragstart="arrastrarTicket(event, '{{ ticket.id }}')"
-              onclick="location.href='/editar_ticket/{{ ticket.id }}'"
-              title="Editar Ticket: {{ ticket.asunto }}"
-            {% else %}
-              title="{{ ticket.asunto }}"
-            {% endif %}
-          >
+  class="cuadro {{ clase }} {% if session.get('usuario') %}editable{% endif %}"
+  data-status="{{ ticket.status }}"
+  data-asunto="{{ ticket.asunto }}"
+  data-cliente="{{ ticket.cliente.nombre }}"
+  data-tt="{{ ticket.tt_remedy }}"
+  {% if session.get('usuario') %}
+    draggable="true"
+    ondragstart="arrastrarTicket(event, '{{ ticket.id }}')"
+    onclick="location.href='/editar_ticket/{{ ticket.id }}'"
+  {% endif %}
+>
             <span style="display:block; font-weight:bold;">
               {% if ticket.tipo == 'Proactivo' %}P{% elif ticket.tipo == 'Reactivo' %}R{% elif ticket.tipo == 'Requerimiento' %}Q{% endif %}
             </span>
@@ -362,5 +377,47 @@
     });
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tooltip = document.getElementById('custom-tooltip');
+
+    document.querySelectorAll('.cuadro[data-status]').forEach(el => {
+      el.addEventListener('mouseenter', (e) => {
+        const asunto = el.getAttribute('data-asunto') || '';
+        const cliente = el.getAttribute('data-cliente') || '';
+        const tt = el.getAttribute('data-tt') || '';
+        tooltip.innerHTML = `<strong>Asunto:</strong> ${asunto}<br><strong>Cliente:</strong> ${cliente}<br><strong>TT Remedy:</strong> ${tt}`;
+        tooltip.style.display = 'block';
+      });
+
+      el.addEventListener('mousemove', (e) => {
+  const tooltipWidth = tooltip.offsetWidth;
+  const tooltipHeight = tooltip.offsetHeight;
+  const pageWidth = window.innerWidth;
+  const pageHeight = window.innerHeight;
+  let left = e.pageX + 15;
+  let top = e.pageY + 15;
+
+  // Si se pasa del borde derecho
+  if (left + tooltipWidth > pageWidth) {
+    left = e.pageX - tooltipWidth - 15;
+  }
+
+  // Si se pasa del borde inferior
+  if (top + tooltipHeight > pageHeight) {
+    top = e.pageY - tooltipHeight - 15;
+  }
+
+  tooltip.style.top = `${top}px`;
+  tooltip.style.left = `${left}px`;
+});
+
+      el.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+    });
+  });
+</script>
+<div id="custom-tooltip" class="tooltip"></div>
 </body>
 </html>

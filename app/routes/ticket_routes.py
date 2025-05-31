@@ -61,6 +61,14 @@ def crear_ticket():
             actualizacion=actualizacion
         )
 
+        nuevo_historial = Historial(
+                ticket_id=id_tt,
+                usuario=Usuario.query.filter_by(usuario=session['usuario']).first(),
+                cambio=f"Actualizacion inicial: {actualizacion}",
+                fecha_hora=datetime.now(zona_ecuador)  # → como datetime, no string
+            )
+        db.session.add(nuevo_historial)
+
         db.session.add(nuevo_ticket)
         db.session.commit()
 

@@ -15,7 +15,9 @@ def dashboard():
     if 'usuario' not in session:
         return redirect(url_for('auth_bp.login'))
 
-    hoy = datetime.now(zona_ecuador).date()
+    ahora = datetime.now(zona_ecuador)
+    hoy = ahora.date()
+    hora_actual = ahora.strftime('%H:%M:%S')
     usuario_actual = Usuario.query.filter_by(usuario=session['usuario']).first()
 
     tickets = Ticket.query.filter(or_(
@@ -49,6 +51,7 @@ def dashboard():
                            ingenieros=ingenieros_ordenados,
                            tickets=tickets,
                            fecha_hoy=hoy.strftime('%d/%m/%Y'),
+                           hora_actual=hora_actual,
                            nombre_usuario=usuario_actual.nombre,
                            ingeniero_turno_id=ingeniero_turno.id if ingeniero_turno else None)
 
@@ -148,9 +151,11 @@ def descargar_historico():
             "Asunto": t.asunto,
             "Fecha Inicio": t.fecha_inicio.strftime('%Y-%m-%d %H:%M:%S') if t.fecha_inicio else '',
             "Fecha Fin": t.fecha_fin.strftime('%Y-%m-%d %H:%M:%S') if t.fecha_fin else '',
+            "TT Remedy": t.tt_remedy,
             "PID": t.pid,
             "Sede": t.sede,
             "Cliente": t.cliente.nombre if t.cliente else '',
+            "Creador": f"{t.usuario.nombre} {t.usuario.apellido}" if t.usuario else '',
             "Asignado": f"{t.asignado.nombre} {t.asignado.apellido}" if t.asignado else ''
         })
 
