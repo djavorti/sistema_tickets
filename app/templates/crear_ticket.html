@@ -134,14 +134,16 @@
         </div>
 
         {% if usuario_logueado.tipo != 'ingeniero' or usuario_logueado.de_turno %}
-        <div class="form-group">
+            <div class="form-group">
             <label for="asignado">Asignado a</label>
             <select name="asignado" id="asignado" required>
                 {% for i in ingenieros %}
-                <option value="{{ i.id }}">{{ i.nombre }} {{ i.apellido }}</option>
+                <option value="{{ i.id }}" {% if i.de_turno %}selected{% endif %}>
+                    {{ i.nombre }} {{ i.apellido }}
+                </option>
                 {% endfor %}
             </select>
-        </div>
+            </div>
         {% else %}
             <!-- Campo oculto si no tiene permiso para asignar -->
             <input type="hidden" name="asignado" value="{{ ingenieros[0].id }}">
