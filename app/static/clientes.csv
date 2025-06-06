@@ -1,78 +1,82 @@
-nombre
-ACNUR THE UNITED NATIONS HIGH COMMISSIONER
-AJE ECUADOR S.A./BIG COLA
-AMBIENSA
-AMERICAN CALL CENTER ACC
-ALMACENES LA GANGA
-ALMACENES TIA
-BANCO BOLIVARIANO
-BANCO DE GUAYAQUIL
-BANRED
-BOLSA DE VALORES BVG
-BRIGHTCELL
-CARSEGSA
-CARTOPEL
-CENTRO ECUATORIANO NORTEAMERICANO CEN
-CERVECERIA NACIONAL
-CONSERVAS ISABEL
-COOPERATIVA CHONE
-COOPERATIVA DAQUILEMA
-COOPERATIVA JEP
-COOPERATIVA OSCUS
-COOPERATIVA SAN FRANCISCO
-DATAFAST
-DECAMERON
-DIFARE
-ECUAQUIMICA/FUMICAR
-EMPRESA PUBLICA DE AGUA EPA
-ENTREGAS ESPECIALES
-EUROFISH
-FONDEO MONETARIO DE CESANTIA FCME
-FORTIUS
-FYBECA/FARCOMED/ECONOFARM
-DOLE 
-GRUPO WONG 
-HEINEKEN
-HOLCIM
-HUMANITAS
-IMPORTADORA TOMEBAMBA
-INDUCOMIC
-INTERAGUA
-INTERCOMMERCE
-LA FABRIL
-LAVANDERIAS ECUATORIANAS (MARTINIZING)
-MARCIMEX
-MEDIANET
-MUNICIPIO DE DAULE (GAD DAULE)
-MUNICIPIO DE GUAYAQUIL (GAD MIMG)
-MUNICIPIO DE MACHALA (GAD EL ORO)
-MUTUALISTA PICHINCHA
-NEDETEL
-NOVACERO
-ORODELTI/AGRICTEC/AQUA 
-PARQUE SANTO DEL ECUADOR
-PAYLESS SHOES
-PETROECUADOR
-PINTURAS UNIDAS (UNICOLOR)
-PRECISION
-PRIMAX - ATIMASA
-PUNTONET
-QSI
-REGISTRO DE LA PROPIEDAD RPG
-SALUD SA
-SANTA PRISCILA
-SECURITY WORLD
-SEMEDIC
-SERVISKY
-SYSTEXCE
-TADEL
-TEOJAMA
-TEVCOL
-UTOPIA
-VALLEJO ARAUJO
-VASERUM
-PRESIDENCIA ALFREDO ESCOBAR
-DIR FIN MARCO ANTONIO CAMPOS
-DIR COM FRANCISCO CORZO
-DIR TH MARCO MIRELES
-SERVICIO INTERNO
+nombre;correo
+ACNUR THE UNITED NATIONS HIGH COMMISSIONER;"ecuqupagos@unhcr.org;ecuqu@unhcr.org"
+AJE ECUADOR S.A./BIG COLA;"jose.maldonado.ec@ajegroup.com;omar.agila.ec@ajegroup.com;octavio.vasconez.ec@ajegroup.com"
+AMBIENSA;rescudero@grupoferretti.com
+AMERICAN CALL CENTER ACC;"jjibaja@acc.com.ec;jjlopez@americancallcenter.com;ereinoso@acc.com.ec;biglesias@acc.com.ec;implementacionbp@acc.com.ec;telecom@acc.com.ec;creinoso@acc.com.ec;sistemas@americancallcenter.com"
+ALMACENES LA GANGA;"cmata@laganga.com;sisgye@laganga.com;sisuio@laganga.com"
+ALMACENES TIA;"cesar.medina@tia.com.ec;fernando.cardenas@tia.com.ec;carlos.alvarado@tia.com.ec;sistemas_redes@tia.com.ec"
+BANCO BOLIVARIANO;"tecnicos@bolivariano.com;bbedonv@bolivariano.com;nvasquez@bolivariano.com"
+BANCO DE GUAYAQUIL;"monitoreoatm@bancoguayaquil.com;NetworkingIT@bancoguayaquil.com"
+BANRED;"pharo@banred.fin.ec;xvasquez@banred.fin.ec;nvera@banred.fin.ec"
+BOLSA DE VALORES BVG;"layala@bvg.fin.ec;oficialdeseguridad@bvg.fin.ec"
+BRIGHTCELL;"sborja@brightcell.net;noc@brightcell.net>;harcos@brightcell.net"
+CARSEGSA;"dmena@carsegsa.com;jneira@carsegsa.com;jserrano@carsegsa.com"
+CARTOPEL;"fabianb1@cartopel.com;christiana2@cartopel.com;rogerios1@cartopel.com"
+CENTRO ECUATORIANO NORTEAMERICANO CEN;"kurt@cenecuador.edu.ec;spau@cenecuador.edu.ec;jlucio@cenecuador.edu.ec"
+CERVECERIA NACIONAL;"workplaceec-team@ab-inbev.com;veronica.calderon@ab-inbev.com;leonardo.quintero2@ab-inbev.com"
+CONSERVAS ISABEL/SARDIPAC/TADEL;"halcivar@isabel.com.ec;hortega@isabel.com.ec"
+COOPERATIVA CHONE;
+COOPERATIVA DAQUILEMA;juliosagnay@coopdaquilema.com
+COOPERATIVA JEP;"turno.infraestructur@jep.coop;infraestructura@jep.coop;soporte@jep.coop"
+COOPERATIVA OSCUS;"dnaranjo@oscus.coop;kredroban@oscus.coop"
+COOPERATIVA SAN FRANCISCO;"diego.llerena@coac-sanfra.com;mauricio.laura@coac-sanfra.com"
+DATAFAST;"operadores_gye@datafast.com.ec;networking@datafast.com.ec;overa@datafast.com.ec"
+DECAMERON;"jose.montezuma@decameron.com;miguel.arguello@decameron.com"
+DIFARE;"TI-Telecomunicaciones@GrupoDifare.com;jorge.reyes@GrupoDifare.com;vicente.chalacan@GrupoDifare.com;joffre.ponce@GrupoDifare.com;alicia.aldaz@GrupoDifare.com;bryan.tumbaco@GrupoDifare.com;soporte.ti@grupodifare.com"
+ECUAQUIMICA/FUMICAR;"cmoreno@ecuaquimica.com.ec;mgarcia@ecuaquimica.com.ec;jcerezo@ecuaquimica.com.ec;arobalino@ecuaquimica.com.ec;paguilera@ecuaquimica.com.ec;hzambrano@ecuaquimica.com.ec"
+EMPRESA PUBLICA DE AGUA EPA;"ricardo.burbano@epa.gob.ec;julio.rosas@epa.gob.ec"
+ENTREGAS ESPECIALES;fquille@entregas.ec
+EUROFISH;"hnavarrete@eurofish.com.ec;jose.arellano@smarthelpit.com;spalma@eurofish.com.ec"
+FONDO MONETARIO DE CESANTIA FCME;"pparrales@fcme.com.ec;fburgos@fcme.com.ec;vtola@fcme.com.ec;fcmecloud@fcme.com.ec"
+FORTIUS;"wmina@fortius.com.ec;avinces@fortius.com.ec;jtixi@fortius.com.ec"
+FYBECA/FARCOMED/ECONOFARM;"eamejiaa@corporaciongpf.com;gcredes@corporaciongpf.com"
+DOLE ;"Gerardo.Villamar@dole.com;felipe.ramirez@dole.com"
+GRUPO WONG/FERTISA/REYBANPAC;"mtamayo@favoritafc.com;fcalderon@favoritafc.com;xrodriguez@favoritafc.com;ibaqueri@favoritafc.com;lbajana@favoritafc.com"
+HEINEKEN;"john.molano@heineken.com;edwin.campoverde@heineken.com;edwin.moran@heineken.com;bruno.moreno@heineken.com"
+HOLCIM;"david.morocho@holcim.com;ecu-it-local@holcim.com"
+HUMANITAS;"monitoreo@totem.com.ec;monitoreo2@totem.com.ec;mservicio@totem.com.ec"
+IMPORTADORA TOMEBAMBA;"eduardo.avila@tomebamba.com.ec;jaime.urgilez@tomebamba.com.ec"
+INDUCOMIC;sistemas@inducom-ec.com
+INTERAGUA;
+INTERCOMMERCE;
+LA FABRIL;infrestructurati@lafabril.com.ec
+LAVANDERIAS ECUATORIANAS (MARTINIZING);"pedro.chamba@martinizing-ec.com;andres.chicaiza@martinizing-ec.com;sistemas.quito@martinizing-ec.com;sistemas.guayas@martinizing-ec.com"
+MARCIMEX/SERVIANDINA;grupo_ti_redes@consensocorp.com
+MEDIANET;"jteran@medianet.com.ec;oloor@medianet.com.ec;izambrano@medianet.com.ec;gmino@medianet.com.ec;cgalvez@medianet.com.ec;ecorrea@medianet.com.ec;nsoto@medianet.com.ec;operadores@medianet.com.ec"
+MUNICIPIO DE DAULE (GAD DAULE);"genesis.acosta@daule.gob.ec;jzevallos@daule.gob.ec"
+MUNICIPIO DE GUAYAQUIL (GAD MIMG);"joebenxm@guayaquil.gov.ec;galsalda@guayaquil.gov.ec;javgonez@guayaquil.gov.ec;juaeliam@guayaquil.gov.ec;mramirez@guayaquil.gov.ec"
+MUNICIPIO DE MACHALA (GAD EL ORO);"mbatallas@machala.gob.ec;rloayza@machala.gob.ec"
+MUTUALISTA PICHINCHA;pnaula@idata.ec
+NEDETEL/UFINET;"noc@nedetel.ufinet.com;soporte@nedetel.ufinet.com;networking@nedetel.ufinet.com"
+NOVACERO;"especialista-seguridad@novacero.com;zambranof@novacero.com;bonifazn@novacero.com"
+ORODELTI/AGRICTEC/SVTECHNOLOGY;"alan.manrique@orodelti.com;victor.sanmiguel@orodelti.com;sistemas@orodelti.com;soporte@orodelti.com"
+AQUASV;coordinador.sistemas@aquasv.com
+PARQUE SANTO DEL ECUADOR;"rvasquez@parquesanto.com.ec;paulina@parquesanto.com.ec"
+PAYLESS SHOES;Estefania.Cruz@payless.com
+PETROECUADOR;
+PINTURAS UNIDAS (UNICOLOR);
+PRECISION;"sergio.aguilera@precision.tech;arnaldo.hernandez@precision.tech;alex.bosquez@precision.tech;adriana.ortiz@precision.tech;manuel.hormazabal@precision.tech"
+PRIMAX - ATIMASA;"JSalazarPi@atimasa.com.ec;RLincangoP@atimasa.com.ec;JJohnsonM@atimasa.com.ec;CortegaV@atimasa.com.ec"
+PUNTONET;"cccorporativo@puntonet.ec;monitoreovip@puntonet.ec"
+QSI;"guillermo.soledispa@qsi.ec;john.tobar@qsi.ec;moises.rosero@qsi.ec"
+REGISTRO DE LA PROPIEDAD RPG;"Jeffrey.Povea@rpguayaquil.gob.ec;Esteban.Serrano@rpguayaquil.gob.ec"
+SALUD SA;
+SANTA PRISCILA;"eddy.choez@ipsp-produccion.com;robin.soledispa@ipsp-produccion.com;jack.sanchez@ipsp-produccion.com;kevin.nunez@ipsp-produccion.com;helpdesk@ipsp-produccion.com"
+SECURITY WORLD;"supervisor@swsecurityworld.com;a.mera@swsecurityworld.com;g.carcamo@swsecurityworld.com;w.claudett@swsecurityworld.com"
+SEMEDIC;"fernando.perazo@semedic.com.ec;juan.ronquillo@semedic.com.ec;margarita.torres@semedic.ec"
+SERVISKY;"jpazmino@servisky.net;mherrera@cellshop.com.ec"
+SYSTEXCE;"paul.sarzosa@systexce.com;xavier.sarzosa@systexce.com"
+TEOJAMA;"fcantuna@teojama.com;diegog@teojama.com;SCANTUNA@TEOJAMA.COM;cpico@teojama.com;rbarba@ngtsa.com.ec;caja.gye@teojama.com"
+TEVCOL;"monitoreo.ecuador@prosegur.com;Jose.Muzo@prosegur.com;monitoreo.ecuador@prosegur.com"
+UTOPIA;"lcarrera@esmeraldafarms.com:sistemas_florycampo@esmeraldafarms.com;aoviedo@esmeraldafarms.com"
+VALLEJO ARAUJO;
+VASERUM;"acsantanab@vaserum.com;gvargas@vaserum.com"
+PRESIDENCIA ALFREDO ESCOBAR;"rbanda@claro.com.ec;dalava@claro.com.ec;rcartagm@claro.com.ec;csilva@claro.com.ec;hloaiza@claro.com.ec;Mchoez@claro.com.ec;vpezo@claro.com.ec"
+DIR FIN MARCO ANTONIO CAMPOS;
+DIR COM FRANCISCO CORZO;
+DIR TH MARCO MIRELES;
+SERVICIO INTERNO;
+COGESCORP;"desarrollo@cogescorp.com;sistemas.gye@cogescorp.com"
+TORRES & TORRES;"infraestructuratyt@torresytorres.com;soportetecnico@torresytorres.com;bbedon@torresytorres.com;phidalgc@claro.com.ec"
+SEGURA EP;"javier.preciado@seguraep.gob.ec;ahmed.perez@seguraep.gob.ec;herman.alarcon@seguraep.gob.ec;paula.gutierrez@seguraep.gob.ec;javier.h@seguraep.gob.ec"
+ECUAVISA;csantander@ecuavisa.com
