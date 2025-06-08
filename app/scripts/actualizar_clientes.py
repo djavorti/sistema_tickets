@@ -1,14 +1,17 @@
 import csv
 import re
+import difflib
 from collections import defaultdict
 from app.extensions import db
 from app.models.cliente import Cliente
 from app import create_app
 
-def tiene_palabra_comun_de_4_letras_o_mas(nombre1, nombre2):
-    palabras1 = set(w.lower() for w in re.findall(r'\b\w{4,}\b', nombre1))
-    palabras2 = set(w.lower() for w in re.findall(r'\b\w{4,}\b', nombre2))
-    return len(palabras1 & palabras2) > 0
+def es_nombre_similar(nombre1, nombre2, umbral=0.85):
+    """Compara la similitud de nombres usando ratio de difflib."""
+    s1 = nombre1.lower().strip()
+    s2 = nombre2.lower().strip()
+    ratio = difflib.SequenceMatcher(None, s1, s2).ratio()
+    return ratio >= umbral
 
 def importar_clientes(csv_path):
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
@@ -23,8 +26,44 @@ def importar_clientes(csv_path):
             nombres_en_csv.add(nombre)
             csv_data.append((nombre, correo))
 
-        # Paso 1: agregar o actualizar
+        # Paso 1: renombrar si hay nombre similar antes de insertar
+        todos_los_clientes = Cliente.query.all()
+        nombres_csv_usados = set()
+        renombrados = 0
+        eliminados = 0
+
+        for cliente in todos_los_clientes:
+            if cliente.nombre not in nombres_en_csv:
+                similar_en_csv = None
+                for nombre_csv, correo_csv in csv_data:
+                    if nombre_csv in nombres_csv_usados:
+                        continue
+
+                    if es_nombre_similar(cliente.nombre, nombre_csv):
+                        similar_en_csv = (nombre_csv, correo_csv)
+                        break
+
+                if similar_en_csv:
+                    nuevo_nombre, nuevo_correo = similar_en_csv
+
+                    ya_existe = Cliente.query.filter_by(nombre=nuevo_nombre).first()
+                    if ya_existe and ya_existe.id != cliente.id:
+                        print(f"No se puede renombrar '{cliente.nombre}' a '{nuevo_nombre}' porque ya existe otro cliente con ese nombre.")
+                        continue
+
+                    print(f"Renombrando '{cliente.nombre}' a '{nuevo_nombre}'.")
+                    cliente.nombre = nuevo_nombre
+                    cliente.email = nuevo_correo
+                    nombres_csv_usados.add(nuevo_nombre)
+                    renombrados += 1
+
+        db.session.commit()
+
+        # Paso 2: agregar nuevos
         for nombre_csv, correo_csv in csv_data:
+            if nombre_csv in nombres_csv_usados:
+                continue
+
             cliente_existente = Cliente.query.filter_by(nombre=nombre_csv).first()
             if cliente_existente:
                 if cliente_existente.email != correo_csv:
@@ -36,6 +75,8 @@ def importar_clientes(csv_path):
                 print(f"Cliente '{nombre_csv}' agregado.")
 
         db.session.commit()
+
+
 
         # Paso 2: renombrar o eliminar
         todos_los_clientes = Cliente.query.all()
@@ -51,7 +92,7 @@ def importar_clientes(csv_path):
                     if nombre_csv in nombres_csv_usados:
                         continue
 
-                    if tiene_palabra_comun_de_4_letras_o_mas(cliente.nombre, nombre_csv):
+                    if es_nombre_similar(cliente.nombre, nombre_csv):
                         similar_en_csv = (nombre_csv, correo_csv)
                         break
 

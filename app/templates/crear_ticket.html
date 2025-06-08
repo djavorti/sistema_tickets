@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -49,12 +50,27 @@
             padding: 0.5rem 1rem;
             margin-top: 1rem;
             width: 100%;
-            background-color: #d32f2f;
+            background-color: #d32f2f; /* Rojo para el botón principal */
             color: white;
             border: none;
             border-radius: 4px;
             font-weight: bold;
+            cursor: pointer; /* Añadir cursor pointer */
         }
+
+        button:hover {
+            opacity: 0.9; /* Efecto hover */
+        }
+
+        #btn-abrir-correo {
+            background-color: #5a6268; /* Color gris para el botón de correo */
+            margin-bottom: 1rem; /* Espacio entre botones */
+        }
+
+        #btn-abrir-correo:hover {
+             opacity: 0.9; /* Efecto hover */
+        }
+
 
         h2 {
             text-align: center;
@@ -88,20 +104,20 @@
         <div class="form-group">
             <label for="medio">Medio</label>
             <select name="medio" id="medio" required>
-                <option value="Whatsapp">Whatsapp</option>
                 <option value="Correo">Correo</option>
+                <option value="Whatsapp">Whatsapp</option>
                 <option value="Llamada">Llamada</option>
             </select>
         </div>
 
         <div class="form-group">
             <label for="asunto">Asunto del caso</label>
-            <textarea name="asunto" id="asunto" required></textarea>
+            <textarea name="asunto" id="asunto" required></textarea> {# Mantener required para la creación del ticket #}
         </div>
 
         <div class="form-group">
-            <label for="detalle">Detalle del caso</label>
-            <textarea name="detalle" id="detalle" required></textarea>
+            <label for="detalle">Detalle del caso (opcional)</label>
+            <textarea name="detalle" id="detalle"></textarea>
         </div>
 
         <div class="form-group">
@@ -146,23 +162,284 @@
             </div>
         {% else %}
             <!-- Campo oculto si no tiene permiso para asignar -->
-            <input type="hidden" name="asignado" value="{{ ingenieros[0].id }}">
+            <input type="hidden" name="asignado" value="{{ ingenieros[0].id if ingenieros else '' }}">
         {% endif %}
 
         <div class="form-group">
-            <label for="actualizacion">Primera actualización</label>
-            <input type="text" name="actualizacion" id="actualizacion" required>
+            <label for="actualizacion">Primera actualizacion (opcional)</label>
+            <input type="text" name="actualizacion" id="actualizacion">
         </div>
 
-        <button type="submit">Crear</button>
+        <!-- Nuevo botón para abrir correo -->
+        <button type="button" id="btn-abrir-correo" style="display: none;">Enviar Correo</button>
+
+        <button type="submit">Crear Ticket</button>
+
+        {# REMOVED: Campo oculto para la lista de nombres de clientes #}
+        {# <input type="hidden" id="cliente-names-data" value="{{ clientes | map(attribute='nombre') | list | tojson }}"> #}
+
     </form>
     <script>
+        // Define a global variable to hold client names data
+    let clienteNames = [];
+    </script>
+    {# ADDED: Script tag to embed JSON data #}
+    <script type="application/json" id="cliente-names-json">
+        {{ clientes | map(attribute='nombre') | list | tojson | safe }}
+    </script>
+
+    <script>
     $(document).ready(function() {
+        console.log("Document ready. Script started.");
+
+        // Retrieve and parse JSON data from the script tag
+        try {
+            const clienteNamesJson = $('#cliente-names-json').text();
+            clienteNames = JSON.parse(clienteNamesJson);
+            console.log("Cliente names data loaded:", clienteNames);
+        } catch (e) {
+            console.error("Error parsing cliente names JSON:", e);
+            // Handle the error, maybe display a message to the user
+        }
+
+
         $('.select2').select2({
             width: '100%',
             placeholder: "Selecciona un cliente"
         });
+
+        const tipoSelect = $('#tipo');
+        const abrirCorreoBtn = $('#btn-abrir-correo');
+        const clienteSelect = $('#cliente');
+        const asuntoInput = $('#asunto');
+        const sedeInput = $('#sede');
+        const pidInput = $('#pid'); // Obtener referencia al campo PID
+
+        // Define el prefijo para el asunto proactivo
+        const proactiveSubjectPrefix = "MONITOREO:: PERDIDA DE ENLACE ";
+        console.log("Proactive subject prefix:", proactiveSubjectPrefix);
+
+
+        // Función para actualizar Asunto, seleccionar cliente y extraer PID basado en Sede y Tipo
+        function updateAsuntoAndSelectClient() {
+            console.log("updateAsuntoAndSelectClient called.");
+            const tipo = tipoSelect.val();
+            const sedeValue = sedeInput.val().trim(); // Obtener valor actual de sede (trim)
+            const currentAsuntoValue = asuntoInput.val(); // Obtener valor actual de asunto (sin trim)
+            console.log("updateAsuntoAndSelectClient - Tipo:", tipo, "Sede Value:", sedeValue, "Current Asunto:", currentAsuntoValue);
+
+            // --- Nueva lógica para extraer PID de Sede ---
+            const pidMatch = sedeValue.match(/\d{8,}/); // Buscar 8 o más dígitos consecutivos
+            if (pidMatch) {
+                console.log("PID found in Sede:", pidMatch[0]);
+                pidInput.val(pidMatch[0]); // Establecer el valor del campo PID
+            } else {
+                console.log("No PID (>= 8 digits) found in Sede. Clearing PID field.");
+                pidInput.val(''); // Limpiar el campo PID si no se encuentra
+            }
+            // --- Fin lógica para extraer PID ---
+
+
+            // Intentar seleccionar el cliente basado en el valor actual de sede
+            attemptClientSelection(sedeValue);
+
+            // Si el tipo es Proactivo, actualizar el campo Asunto
+            if (tipo === 'Proactivo') {
+                console.log("updateAsuntoAndSelectClient - Tipo is 'Proactivo'. Updating Asunto.");
+                const newAsuntoValue = proactiveSubjectPrefix + sedeValue;
+                // Solo actualizar si el asunto actual no es ya el valor deseado
+                if (currentAsuntoValue !== newAsuntoValue) {
+                    console.log("updateAsuntoAndSelectClient - Asunto needs update. Setting to:", newAsuntoValue);
+                    asuntoInput.val(newAsuntoValue);
+                } else {
+                    console.log("updateAsuntoAndSelectClient - Asunto is already correct.");
+                }
+            } else {
+                 console.log("updateAsuntoAndSelectClient - Tipo is NOT 'Proactivo'. Not updating Asunto based on Sede.");
+                 // Si el tipo cambia de Proactivo a otro, y el asunto empieza con el prefijo, borrarlo.
+                 // Esto se maneja mejor en handleTipoChange.
+            }
+        }
+
+
+        // Función para intentar seleccionar un cliente basado en un nombre (Lógica de match mejorada)
+        function attemptClientSelection(clientName) {
+             console.log("attemptClientSelection called with clientName:", clientName);
+             if (clientName === '') {
+                 console.log("attemptClientSelection - clientName is empty, deselecting.");
+                 // Si el nombre del cliente está vacío, deseleccionar el select2
+                 clienteSelect.val(null).trigger('change.select2');
+                 return;
+             }
+
+             // Lógica para encontrar la primera palabra relevante en clientName (el contenido de Sede)
+             // Excluir números antes de la extracción de palabras para la búsqueda de cliente
+             const cleanedClientNameForWordExtraction = clientName.toLowerCase().replace(/\d+/g, ''); // Clean numbers and lowercase
+             console.log("attemptClientSelection - Cleaned clientName for word extraction (no digits):", cleanedClientNameForWordExtraction);
+
+             // Split by spaces or underscores
+             const words = cleanedClientNameForWordExtraction.split(/[\s_]+/);
+             console.log("attemptClientSelection - Words from cleaned name:", words);
+
+             let searchWord = '';
+             for (const word of words) {
+                 // Check if word is not empty, not 'sp' or 'ic', and has length >= 2
+                 if (word !== '' && word !== 'sp' && word !== 'ic' && word.length >= 2) {
+                     searchWord = word; // Found the first relevant word
+                     break;
+                 }
+             }
+             console.log("attemptClientSelection - Found search word:", searchWord);
+
+
+             if (searchWord === '') {
+                 console.log("attemptClientSelection - No relevant search word found, deselecting.");
+                 clienteSelect.val(null).trigger('change.select2');
+                 return;
+             }
+
+             // Use the found searchWord for matching against client names
+             const lowerSearchWord = searchWord; // Already lowercased
+
+             let matchedClient = null;
+
+             // Regla 1: Coincidencia exacta de palabra (case-insensitive, ignoring digits)
+             console.log(`Attempting Rule 1: Exact word match for "${lowerSearchWord}"`);
+             matchedClient = clienteNames.find(name =>
+                 // Clean client name from list before splitting and comparing
+                 name.toLowerCase().replace(/\d+/g, '').split(/[\s_]+/).includes(lowerSearchWord)
+             );
+             if (matchedClient) {
+                 console.log("Rule 1 matched:", matchedClient);
+             } else {
+                 console.log("Rule 1 failed.");
+                 // Regla 2: Coincidencia de subcadena (case-insensitive, ignoring digits)
+                 console.log(`Attempting Rule 2: Substring match for "${lowerSearchWord}"`);
+                 matchedClient = clienteNames.find(name =>
+                     // Clean client name from list before comparing substring
+                     name.toLowerCase().replace(/\d+/g, '').includes(lowerSearchWord)
+                 );
+                 if (matchedClient) {
+                     console.log("Rule 2 matched:", matchedClient);
+                 } else {
+                     console.log("Rule 2 failed.");
+                     // Regla 3: Coincidencia "Empieza por" (case-insensitive, ignoring digits)
+                     console.log(`Attempting Rule 3: Starts with match for "${lowerSearchWord}"`);
+                     matchedClient = clienteNames.find(name =>
+                         // Clean client name from list before comparing startsWith
+                         name.toLowerCase().replace(/\d+/g, '').startsWith(lowerSearchWord)
+                     );
+                     if (matchedClient) {
+                         console.log("Rule 3 matched:", matchedClient);
+                     } else {
+                         console.log("Rule 3 failed.");
+                     }
+                 }
+             }
+
+
+             if (matchedClient) {
+                 // Si encontramos una coincidencia, seleccionar en Select2
+                 // Usamos el nombre exacto de la lista para asegurar que coincida con las options
+                 console.log("attemptClientSelection - Selecting client:", matchedClient);
+                 clienteSelect.val(matchedClient).trigger('change.select2');
+             } else {
+                 console.log("attemptClientSelection - No matching client found, deselecting.");
+                 // Si no hay coincidencia, deseleccionar el select2
+                 clienteSelect.val(null).trigger('change.select2');
+             }
+        }
+
+
+        // Función para mostrar/ocultar el botón de correo y manejar el prefijo del asunto
+        function handleTipoChange() {
+            const currentTipo = tipoSelect.val();
+            const currentAsuntoValue = asuntoInput.val(); // Get the current value
+            console.log("handleTipoChange called. Current Tipo:", currentTipo);
+            console.log("handleTipoChange - Current Asunto value:", currentAsuntoValue);
+            console.log("handleTipoChange - Proactive Prefix:", proactiveSubjectPrefix);
+
+
+            if (currentTipo === 'Proactivo') {
+                console.log("handleTipoChange - Condition: Tipo is 'Proactivo'.");
+                abrirCorreoBtn.show();
+                // Cuando cambia a Proactivo, forzar la actualización del asunto basado en la sede actual
+                updateAsuntoAndSelectClient();
+
+            } else { // Tipo is NOT Proactivo
+                console.log("handleTipoChange - Condition: Tipo is NOT 'Proactivo'.");
+                abrirCorreoBtn.hide();
+                // Si el asunto actualmente empieza con el prefijo proactivo, borrarlo al cambiar de tipo
+                if (currentAsuntoValue.startsWith(proactiveSubjectPrefix)) {
+                     console.log("handleTipoChange - Condition: Asunto starts with prefix. Clearing field.");
+                     asuntoInput.val('');
+                } else {
+                     console.log("handleTipoChange - Condition: Asunto does not start with prefix. Keeping field value.");
+                }
+                 // Al cambiar de tipo, también re-evaluar la selección del cliente basada solo en la sede
+                 updateAsuntoAndSelectClient();
+            }
+        }
+
+        // Función para construir y abrir la URL mailto (ahora usa AJAX)
+        function openMailto() {
+            console.log("openMailto called.");
+            const clienteNombre = clienteSelect.val();
+            const asunto = asuntoInput.val();
+            const sede = sedeInput.val();
+            const tipo = tipoSelect.val(); // Obtener el tipo de ticket
+            console.log("openMailto - Cliente:", clienteNombre, "Asunto:", asunto, "Sede:", sede, "Tipo:", tipo);
+
+
+            // Validar que los campos necesarios no estén vacíos antes de enviar la solicitud
+            if (!clienteNombre || !asunto) {
+                alert("Por favor, selecciona un cliente y escribe un asunto para preparar el correo.");
+                console.log("openMailto - Validation failed.");
+                return;
+            }
+            console.log("openMailto - Validation passed. Sending AJAX request.");
+
+
+            // Realizar solicitud AJAX al servidor
+            $.ajax({
+                url: "{{ url_for('ticket_bp.prepare_proactive_email') }}", // Nueva ruta
+                method: 'POST',
+                data: {
+                    cliente_nombre: clienteNombre,
+                    asunto: asunto, // Enviar el asunto tal como está en el campo
+                    sede: sede,
+                    tipo: tipo // Enviar el tipo de ticket
+                },
+                success: function(response) {
+                    console.log("AJAX success. Response:", response);
+                    if (response.mailto_url) {
+                        console.log("Opening mailto URL:", response.mailto_url);
+                        // Abrir el cliente de correo con la URL recibida
+                        window.location.href = response.mailto_url;
+                    } else {
+                        alert("No se pudo preparar la URL del correo.");
+                        console.error("AJAX success but no mailto_url in response.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error al preparar el correo:", error);
+                    alert("Ocurrió un error al preparar el correo. Por favor, inténtalo de nuevo.");
+                }
+            });
+        }
+
+        // Event listeners
+        tipoSelect.on('change', handleTipoChange); // Usar la nueva función
+        sedeInput.on('input', updateAsuntoAndSelectClient); // Llamar al escribir en la sede
+        asuntoInput.on('input', updateAsuntoAndSelectClient); // Mantener listener en asunto por si el usuario edita manualmente
+        abrirCorreoBtn.on('click', openMailto);
+
+        // Inicializar el estado del botón, el asunto y la extracción/selección al cargar la página
+        console.log("Calling handleTipoChange on document ready.");
+        handleTipoChange(); // Llamar al cargar para establecer el estado inicial y disparar la primera actualización
     });
 </script>
+
+
 </body>
 </html>
