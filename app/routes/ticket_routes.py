@@ -28,6 +28,8 @@ def crear_ticket():
         asunto = request.form['asunto']
         # Usar .get() para campos opcionales, proporcionando un valor por defecto si no están presentes
         detalle = request.form.get('detalle', '').strip()
+        if not detalle:
+            detalle = asunto # Si no se proporciona detalle, se usa el asunto como detalle
         pid = request.form.get('pid', '').strip()
         sede = request.form.get('sede', '').strip()
         tt_remedy = request.form.get('tt_remedy', '').strip()
@@ -58,17 +60,28 @@ def crear_ticket():
 
         # --- Generar el ID del ticket AHORA (en el POST) ---
         hoy = datetime.now(zona_ecuador)
-        base_id = hoy.strftime('%Y%m%d')
-        # Contar tickets del día actual para el sufijo
-        tickets_hoy = Ticket.query.filter(
-            extract('year', Ticket.fecha_inicio) == hoy.year,
-            extract('month', Ticket.fecha_inicio) == hoy.month,
-            extract('day', Ticket.fecha_inicio) == hoy.day
-        ).count()
-        # Generar el nuevo ID basado en la cuenta del día
-        nuevo_id_tt = f"{base_id}-{tickets_hoy + 1:03}"
-        # --- Fin Generación de ID en POST ---
-
+        base_id = hoy.strftime('%Y%m')  # Solo año y mes
+        # Buscar todos los tickets del MES actual y extraer el mayor sufijo numérico
+        tickets_mes = (
+            Ticket.query
+            .filter(
+                Ticket.id.startswith(base_id),  # Solo filtra por año y mes
+                extract('year', Ticket.fecha_inicio) == hoy.year,
+                extract('month', Ticket.fecha_inicio) == hoy.month
+            )
+            .all()
+        )
+        max_num = 0
+        for t in tickets_mes:
+            try:
+                num = int(t.id.split('-')[-1])
+                if num > max_num:
+                    max_num = num
+            except Exception:
+                continue
+        nuevo_num = max_num + 1
+        # El ID sigue usando el día para el display, pero el correlativo es mensual
+        nuevo_id_tt = f"{hoy.strftime('%Y%m%d')}-{nuevo_num:04}"
 
         # Crear el nuevo ticket
         nuevo_ticket = Ticket(
@@ -119,8 +132,10 @@ def crear_ticket():
         extract('month', Ticket.fecha_inicio) == hoy.month,
         extract('day', Ticket.fecha_inicio) == hoy.day
     ).count()
+    
     # Generar el ID provisional
-    id_tt_provisional = f"{base_id}-{tickets_hoy_estimado + 1:03}"
+    id_tt_provisional = f"{base_id}-{tickets_hoy_estimado + 1:04}"
+
 
 
     return render_template(
