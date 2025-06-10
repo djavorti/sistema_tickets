@@ -245,16 +245,11 @@
 
             // Si el tipo es Proactivo, actualizar el campo Asunto
             if (tipo === 'Proactivo') {
-                console.log("updateAsuntoAndSelectClient - Tipo is 'Proactivo'. Updating Asunto.");
-                const newAsuntoValue = proactiveSubjectPrefix + sedeValue;
-                // Solo actualizar si el asunto actual no es ya el valor deseado
-                if (currentAsuntoValue !== newAsuntoValue) {
-                    console.log("updateAsuntoAndSelectClient - Asunto needs update. Setting to:", newAsuntoValue);
-                    asuntoInput.val(newAsuntoValue);
-                } else {
-                    console.log("updateAsuntoAndSelectClient - Asunto is already correct.");
+                // Solo autocompletar si el campo asunto está vacío o empieza con el prefijo
+                if (!currentAsuntoValue.trim() || currentAsuntoValue.startsWith(proactiveSubjectPrefix)) {
+                    asuntoInput.val(proactiveSubjectPrefix + sedeValue);
                 }
-            } else {
+            }else {
                  console.log("updateAsuntoAndSelectClient - Tipo is NOT 'Proactivo'. Not updating Asunto based on Sede.");
                  // Si el tipo cambia de Proactivo a otro, y el asunto empieza con el prefijo, borrarlo.
                  // Esto se maneja mejor en handleTipoChange.
@@ -264,91 +259,59 @@
 
         // Función para intentar seleccionar un cliente basado en un nombre (Lógica de match mejorada)
         function attemptClientSelection(clientName) {
-             console.log("attemptClientSelection called with clientName:", clientName);
-             if (clientName === '') {
-                 console.log("attemptClientSelection - clientName is empty, deselecting.");
-                 // Si el nombre del cliente está vacío, deseleccionar el select2
-                 clienteSelect.val(null).trigger('change.select2');
-                 return;
-             }
+    console.log("attemptClientSelection called with clientName:", clientName);
+    if (!clientName) {
+        clienteSelect.val(null).trigger('change.select2');
+        return;
+    }
 
-             // Lógica para encontrar la primera palabra relevante en clientName (el contenido de Sede)
-             // Excluir números antes de la extracción de palabras para la búsqueda de cliente
-             const cleanedClientNameForWordExtraction = clientName.toLowerCase().replace(/\d+/g, ''); // Clean numbers and lowercase
-             console.log("attemptClientSelection - Cleaned clientName for word extraction (no digits):", cleanedClientNameForWordExtraction);
+    // Limpiar números y pasar a mayúsculas para comparar
+    const cleaned = clientName.replace(/\d+/g, '').toUpperCase();
+    const words = cleaned.split(/[\s_]+/).filter(w => w && w.length > 1 && w !== 'IC' && w !== 'SP');
 
-             // Split by spaces or underscores
-             const words = cleanedClientNameForWordExtraction.split(/[\s_]+/);
-             console.log("attemptClientSelection - Words from cleaned name:", words);
+    // Preprocesar nombres de clientes
+    const clientesProcesados = clienteNames.map(n => ({
+        original: n,
+        upper: n.replace(/\d+/g, '').toUpperCase()
+    }));
 
-             let searchWord = '';
-             for (const word of words) {
-                 // Check if word is not empty, not 'sp' or 'ic', and has length >= 2
-                 if (word !== '' && word !== 'sp' && word !== 'ic' && word.length >= 2) {
-                     searchWord = word; // Found the first relevant word
-                     break;
-                 }
-             }
-             console.log("attemptClientSelection - Found search word:", searchWord);
-
-
-             if (searchWord === '') {
-                 console.log("attemptClientSelection - No relevant search word found, deselecting.");
-                 clienteSelect.val(null).trigger('change.select2');
-                 return;
-             }
-
-             // Use the found searchWord for matching against client names
-             const lowerSearchWord = searchWord; // Already lowercased
-
-             let matchedClient = null;
-
-             // Regla 1: Coincidencia exacta de palabra (case-insensitive, ignoring digits)
-             console.log(`Attempting Rule 1: Exact word match for "${lowerSearchWord}"`);
-             matchedClient = clienteNames.find(name =>
-                 // Clean client name from list before splitting and comparing
-                 name.toLowerCase().replace(/\d+/g, '').split(/[\s_]+/).includes(lowerSearchWord)
-             );
-             if (matchedClient) {
-                 console.log("Rule 1 matched:", matchedClient);
-             } else {
-                 console.log("Rule 1 failed.");
-                 // Regla 2: Coincidencia de subcadena (case-insensitive, ignoring digits)
-                 console.log(`Attempting Rule 2: Substring match for "${lowerSearchWord}"`);
-                 matchedClient = clienteNames.find(name =>
-                     // Clean client name from list before comparing substring
-                     name.toLowerCase().replace(/\d+/g, '').includes(lowerSearchWord)
-                 );
-                 if (matchedClient) {
-                     console.log("Rule 2 matched:", matchedClient);
-                 } else {
-                     console.log("Rule 2 failed.");
-                     // Regla 3: Coincidencia "Empieza por" (case-insensitive, ignoring digits)
-                     console.log(`Attempting Rule 3: Starts with match for "${lowerSearchWord}"`);
-                     matchedClient = clienteNames.find(name =>
-                         // Clean client name from list before comparing startsWith
-                         name.toLowerCase().replace(/\d+/g, '').startsWith(lowerSearchWord)
-                     );
-                     if (matchedClient) {
-                         console.log("Rule 3 matched:", matchedClient);
-                     } else {
-                         console.log("Rule 3 failed.");
-                     }
-                 }
-             }
-
-
-             if (matchedClient) {
-                 // Si encontramos una coincidencia, seleccionar en Select2
-                 // Usamos el nombre exacto de la lista para asegurar que coincida con las options
-                 console.log("attemptClientSelection - Selecting client:", matchedClient);
-                 clienteSelect.val(matchedClient).trigger('change.select2');
-             } else {
-                 console.log("attemptClientSelection - No matching client found, deselecting.");
-                 // Si no hay coincidencia, deseleccionar el select2
-                 clienteSelect.val(null).trigger('change.select2');
-             }
+    // Algoritmo: ir probando con cada palabra, luego con combinaciones crecientes
+    // 1. Probar cada palabra individualmente (en orden)
+    for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const matches = clientesProcesados.filter(c => c.upper.includes(word));
+        if (matches.length === 1) {
+            clienteSelect.val(matches[0].original).trigger('change.select2');
+            return;
         }
+        // Si hay más de uno, intentar con combinaciones de 2, 3, etc.
+        if (matches.length > 1) {
+            for (let j = i + 1; j <= words.length; j++) {
+                const combo = words.slice(i, j).join(' ');
+                const comboMatches = matches.filter(c => c.upper.includes(combo));
+                if (comboMatches.length === 1) {
+                    clienteSelect.val(comboMatches[0].original).trigger('change.select2');
+                    return;
+                }
+            }
+        }
+    }
+
+    // 2. Si no hay match único, probar combinaciones de todas las palabras (más estricto)
+    for (let size = 2; size <= words.length; size++) {
+        for (let start = 0; start <= words.length - size; start++) {
+            const combo = words.slice(start, start + size).join(' ');
+            const matches = clientesProcesados.filter(c => c.upper.includes(combo));
+            if (matches.length === 1) {
+                clienteSelect.val(matches[0].original).trigger('change.select2');
+                return;
+            }
+        }
+    }
+
+    // 3. Si no hay match, deseleccionar
+    clienteSelect.val(null).trigger('change.select2');
+}
 
 
         // Función para mostrar/ocultar el botón de correo y manejar el prefijo del asunto

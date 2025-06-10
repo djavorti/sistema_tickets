@@ -193,7 +193,8 @@ def prepare_proactive_email():
     email_body = f"{greeting},\r\n\r\nAl momento se detecta pérdida del enlace {ticket_sede}.\r\n\r\nSu gentil ayuda descartando problemas eléctricos o trabajos que afecten a los equipos.\r\n\r\n{user_name}"
 
     # Direcciones de correo para CC
-    cc_emails = "tecoymcorpcnoc@claro.com.ec,soporte_empresas@claro.com.ec"
+    # Direcciones de correo para CC
+    cc_emails = "tecoymcorpcnoc@claro.com.ec;soporte_empresas@claro.com.ec"
 
     # Codificar asunto, cuerpo y CC para la URL usando urllib.parse.quote
     encoded_subject = urllib.parse.quote(asunto) # Usar el asunto tal como llega
