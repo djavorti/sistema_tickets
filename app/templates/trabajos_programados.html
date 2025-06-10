@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Trabajos Programados</title>
+    <style>
+        body { font-family: Arial; background: #f4f4f4; }
+        form, .tabla-resultados { background: #fff; padding: 2rem; border-radius: 8px; margin: 2rem auto; width: 600px; box-shadow: 0 0 10px #ccc; }
+        .form-group { margin-bottom: 1rem; }
+        label { font-weight: bold; display: block; margin-bottom: 0.3rem; }
+        input, textarea { width: 100%; padding: 0.5rem; }
+        button { padding: 0.5rem 1rem; background: #d32f2f; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+    <form method="POST">
+        <h2>Enviar Trabajos Programados</h2>
+        <div class="form-group">
+            <label for="detalle">Detalle de trabajo</label>
+            <textarea name="detalle" id="detalle" required>{{ detalle or '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="crq">CRQ</label>
+            <input type="text" name="crq" id="crq" required value="{{ crq or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="observacion">Observación</label>
+            <textarea name="observacion" id="observacion">{{ observacion or '' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="fecha_inicio">Fecha/Hora Inicio</label>
+            <input type="datetime-local" name="fecha_inicio" id="fecha_inicio" required value="{{ fecha_inicio or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="fecha_fin">Fecha/Hora Fin</label>
+            <input type="datetime-local" name="fecha_fin" id="fecha_fin" required value="{{ fecha_fin or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="duracion">Duración de trabajos</label>
+            <input type="text" name="duracion" id="duracion" required value="{{ duracion or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="indisponibilidad">Tiempo de indisponibilidad</label>
+            <input type="text" name="indisponibilidad" id="indisponibilidad" required value="{{ indisponibilidad or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="servicios">Servicios a notificar (uno por línea, formato: SEDE - SERVICIO)</label>
+            <textarea name="servicios" id="servicios" rows="5" required>{{ servicios or '' }}</textarea>
+        </div>
+        <button type="submit">Siguiente</button>
+    </form>
+
+    {% if mostrar_tabla %}
+    <div class="tabla-resultados">
+        <h3>Servicios por Cliente</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Servicios</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-servicios">
+                <!-- La tabla se llenará con JS -->
+            </tbody>
+        </table>
+    </div>
+    <script id="clientes-json" type="application/json">
+    {{ clientes|map(attribute='nombre')|list|tojson }}
+</script>
+<script>
+const clientes = JSON.parse(document.getElementById('clientes-json').textContent);
+const servicios = `{{ servicios|replace('\r\n', '\n')|replace('\r', '\n')|safe }}`.split('\n').filter(s => s.trim());
+
+function normalizar(str) {
+    return str.replace(/\d+/g, '').toUpperCase();
+}
+function buscarCliente(sedeServicio) {
+    const sede = sedeServicio.split('-')[0].trim();
+    const cleaned = normalizar(sede);
+    const words = cleaned.split(/[\s_\/]+/).filter(w => w && w.length > 1 && w !== 'IC' && w !== 'SP');
+    for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const matches = clientes.filter(c => normalizar(c).includes(word));
+        if (matches.length === 1) return matches[0];
+        if (matches.length > 1) {
+            for (let j = i + 1; j <= words.length; j++) {
+                const combo = words.slice(i, j).join(' ');
+                const comboMatches = matches.filter(c => normalizar(c).includes(combo));
+                if (comboMatches.length === 1) return comboMatches[0];
+            }
+        }
+    }
+    for (let size = 2; size <= words.length; size++) {
+        for (let start = 0; start <= words.length - size; start++) {
+            const combo = words.slice(start, start + size).join(' ');
+            const matches = clientes.filter(c => normalizar(c).includes(combo));
+            if (matches.length === 1) return matches[0];
+        }
+    }
+    return '';
+}
+const serviciosPorCliente = {};
+const noIdentificados = [];
+for (const s of servicios) {
+    const cliente = buscarCliente(s);
+    if (!cliente) {
+        noIdentificados.push(s);
+        continue;
+    }
+    if (!serviciosPorCliente[cliente]) serviciosPorCliente[cliente] = [];
+    serviciosPorCliente[cliente].push(s);
+}
+const tbody = document.getElementById('tabla-servicios');
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+function generarHtmlCorreo(cliente, servicios) {
+    // Obtén los valores del formulario usando Jinja variables
+    const detalle = `{{ detalle|e }}`;
+    const crq = `{{ crq|e }}`;
+    const observacion = `{{ observacion|e }}`;
+    const fecha_inicio = `{{ fecha_inicio|e }}`;
+    const fecha_fin = `{{ fecha_fin|e }}`;
+    const duracion = `{{ duracion|e }}`;
+    const indisponibilidad = `{{ indisponibilidad|e }}`;
+    const serviciosAfectados = servicios.map(escapeHtml).join('<br>');
+    return `
+<p>Estimado equipo,</p>
+<p>Se les informa sobre la ejecución de un trabajo emergente según los siguientes detalles:</p>
+<table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; font-family: Arial;">
+<tr><th align="left">CLIENTE</th><td>${escapeHtml(cliente)}</td></tr>
+<tr><th align="left">DETALLE TRABAJO</th><td>${detalle}</td></tr>
+<tr><th align="left">CRQ</th><td>${crq}</td></tr>
+<tr><th align="left">OBSERVACIÓN</th><td>${observacion}</td></tr>
+<tr><th align="left">FECHA / HORA INICIO</th><td>${fecha_inicio}</td></tr>
+<tr><th align="left">FECHA / HORA FIN</th><td>${fecha_fin}</td></tr>
+<tr><th align="left">SERVICIOS AFECTADOS</th><td>${serviciosAfectados}</td></tr>
+<tr><th align="left">DURACIÓN DE TRABAJOS</th><td>${duracion}</td></tr>
+<tr><th align="left">TIEMPO DE INDISPONIBILIDAD</th><td>${indisponibilidad}</td></tr>
+</table>
+<p><i>Nota: Se considerará aceptado el mantenimiento en caso de no contar con una respuesta dentro de las 48 horas luego de realizada la notificación.</i></p>
+<p>Saludos cordiales,<br>Equipo Claro</p>
+`;
+}
+function copiarAlPortapapeles(html) {
+    // Esto solo funciona en Windows con un script Python externo.
+    // Aquí solo mostramos el HTML y damos instrucciones.
+    const temp = document.createElement('textarea');
+    temp.value = html;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    alert('El contenido HTML ha sido copiado al portapapeles.\nPega en Outlook o ejecuta el script Python para formato enriquecido.');
+}
+for (const [cliente, servicios] of Object.entries(serviciosPorCliente)) {
+    const tr = document.createElement('tr');
+    const tdCliente = document.createElement('td');
+    tdCliente.textContent = cliente;
+    const tdServicios = document.createElement('td');
+    tdServicios.innerHTML = servicios.map(s => `<div>${escapeHtml(s)}</div>`).join('');
+    const tdAccion = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.textContent = "Enviar correo";
+    btn.onclick = function() {
+        const html = generarHtmlCorreo(cliente, servicios);
+        copiarAlPortapapeles(html);
+    };
+    tdAccion.appendChild(btn);
+    tr.appendChild(tdCliente);
+    tr.appendChild(tdServicios);
+    tr.appendChild(tdAccion);
+    tbody.appendChild(tr);
+}
+// Fila para no identificados
+if (noIdentificados.length > 0) {
+    const tr = document.createElement('tr');
+    const tdCliente = document.createElement('td');
+    tdCliente.textContent = "NO IDENTIFICADO";
+    tdCliente.style.color = "red";
+    const tdServicios = document.createElement('td');
+    tdServicios.innerHTML = noIdentificados.map(s => `<div>${escapeHtml(s)}</div>`).join('');
+    const tdAccion = document.createElement('td');
+    tdAccion.textContent = "-";
+    tr.appendChild(tdCliente);
+    tr.appendChild(tdServicios);
+    tr.appendChild(tdAccion);
+    tbody.appendChild(tr);
+}
+</script>
+    {% endif %}
+</body>
+</html>

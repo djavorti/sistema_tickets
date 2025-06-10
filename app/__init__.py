@@ -9,6 +9,7 @@ from app.extensions import db, migrate
 
 
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -20,6 +21,8 @@ def create_app():
     from app.routes.auth_routes import auth_bp
     from app.routes.ticket_routes import ticket_bp
     from app.routes.dashboard_routes import dashboard_bp
+    from app.routes.programado_routes import programado_bp
+    app.register_blueprint(programado_bp)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(ticket_bp)

@@ -184,11 +184,13 @@
         <button type="submit">Cerrar sesión</button>
       </form>
       <a href="{{ url_for('dashboard_bp.historico') }}" class="btn">Ver Histórico de Tickets</a>
+      <a href="{{ url_for('programado_bp.programado') }}" class="btn">Enviar Trabajos Programados</a>
     </div>
   {% else %}
     <div>
       <a href="{{ url_for('auth_bp.login') }}">Iniciar sesión</a>
     </div>
+    
   {% endif %}
   <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 10px;">
   <span><strong>Ingeniero de Turno</strong></span>
