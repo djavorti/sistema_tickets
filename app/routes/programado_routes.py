@@ -9,9 +9,11 @@ def programado():
         return redirect(url_for('auth_bp.login'))
 
     clientes = Cliente.query.all()
+    correos_clientes = {c.nombre: c.email for c in clientes}
+
     if request.method == 'POST':
         # Recoge los datos del formulario
-        detalle = request.form.get('detalle')
+        asunto=request.form.get('asunto')
         crq = request.form.get('crq')
         observacion = request.form.get('observacion')
         fecha_inicio = request.form.get('fecha_inicio')
@@ -24,7 +26,8 @@ def programado():
         return render_template(
             'trabajos_programados.html',
             clientes=clientes,
-            detalle=detalle,
+            correos_clientes=correos_clientes,
+            asunto=asunto,
             crq=crq,
             observacion=observacion,
             fecha_inicio=fecha_inicio,
@@ -35,4 +38,4 @@ def programado():
             mostrar_tabla=True
         )
 
-    return render_template('trabajos_programados.html', clientes=clientes, mostrar_tabla=False)
+    return render_template('trabajos_programados.html', clientes=clientes, correos_clientes=correos_clientes, mostrar_tabla=False)

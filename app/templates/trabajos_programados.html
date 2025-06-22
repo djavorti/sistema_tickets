@@ -1,35 +1,110 @@
+Nota: Esta nueva herramientas esta sujeta a cambios y mejoras continuas. Si encuentras algun error o tienes sugerencias, por favor contacta al equipo de desarrollo.
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="{{ url_for('static', filename='js/cliente_matching.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Select2 para filtrado de clientes -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <meta charset="UTF-8">
     <title>Trabajos Programados</title>
     <style>
-        body { font-family: Arial; background: #f4f4f4; }
-        form, .tabla-resultados { background: #fff; padding: 2rem; border-radius: 8px; margin: 2rem auto; width: 600px; box-shadow: 0 0 10px #ccc; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; }
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2rem;
+            margin: 2rem auto;
+            max-width: 1600px;
+        }
+        form {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #0001;
+            min-width: 260px;
+            max-width: 320px;
+            flex: 0 0 280px;
+        }
+        .tabla-resultados {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #0001;
+            min-width: 700px;
+            max-width: 1200px;
+            flex: 1 1 900px;
+            overflow-x: auto;
+        }
         .form-group { margin-bottom: 1rem; }
         label { font-weight: bold; display: block; margin-bottom: 0.3rem; }
-        input, textarea { width: 100%; padding: 0.5rem; }
-        button { padding: 0.5rem 1rem; background: #d32f2f; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        button:hover { opacity: 0.9; }
-        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
-        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
-        th { background: #eee; }
+        input, textarea { width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc; }
+        button { padding: 0.5rem 1.5rem; background: #b71c1c; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #d32f2f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; box-shadow: 0 2px 12px #0002; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 0.75rem; text-align: center; font-size: 1rem; }
+        th { background: #f5f5f5; }
+        .tabla-moderna th.col-izq, .tabla-moderna td.col-izq {
+            background: #f0f0f0;
+            color: #333;
+            font-weight: bold;
+            border-right: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        .tabla-moderna th, .tabla-moderna td {
+            border-bottom: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        .tabla-moderna tr:last-child th, .tabla-moderna tr:last-child td {
+            border-bottom: none;
+        }
+        .tabla-moderna { border-radius: 12px; overflow: hidden; }
+        @media (max-width: 1100px) {
+            .flex-container { flex-direction: column; align-items: stretch; }
+            .tabla-resultados { min-width: 0; max-width: 100vw; }
+        }
+        .btn-dashboard {
+            padding: 0.5rem 1.5rem;
+            background: #b71c1c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-dashboard:hover {
+            background: #d32f2f;
+        }
+        .servicios-list { list-style: none; padding: 0; margin: 0; min-height: 24px; }
+        .servicio-item { background: #eee; margin: 2px 0; padding: 4px 8px; border-radius: 4px; cursor: grab; }
+        .servicio-item:active { background: #ccc; }
     </style>
 </head>
 <body>
-    <form method="POST">
+<div class="flex-container">
+    <form method="POST" id="trabajoForm">
         <h2>Enviar Trabajos Programados</h2>
         <div class="form-group">
-            <label for="detalle">Detalle de trabajo</label>
-            <textarea name="detalle" id="detalle" required>{{ detalle or '' }}</textarea>
+            <label for="asunto">Asunto</label>
+            <textarea name="asunto" id="asunto" required>{{ asunto or '' }}</textarea>
         </div>
         <div class="form-group">
             <label for="crq">CRQ</label>
             <input type="text" name="crq" id="crq" required value="{{ crq or '' }}">
         </div>
         <div class="form-group">
-            <label for="observacion">Observación</label>
-            <textarea name="observacion" id="observacion">{{ observacion or '' }}</textarea>
+            <label for="observacion">Observacion</label>
+            <textarea name="observacion" id="observacion">{{ observacion or 'Mantenimiento preventivo' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="detalle_trabajos">Detalle de trabajos</label>
+            <textarea name="detalle_trabajos" id="detalle_trabajos" required>{{ detalle_trabajos or 'Mantener la disponibilidad de los equipos al 100%' }}</textarea>
         </div>
         <div class="form-group">
             <label for="fecha_inicio">Fecha/Hora Inicio</label>
@@ -40,15 +115,15 @@
             <input type="datetime-local" name="fecha_fin" id="fecha_fin" required value="{{ fecha_fin or '' }}">
         </div>
         <div class="form-group">
-            <label for="duracion">Duración de trabajos</label>
-            <input type="text" name="duracion" id="duracion" required value="{{ duracion or '' }}">
+            <label for="duracion">Duracion de trabajos</label>
+            <input type="text" name="duracion" id="duracion" required value="{{ duracion or '' }}" readonly>
         </div>
         <div class="form-group">
             <label for="indisponibilidad">Tiempo de indisponibilidad</label>
             <input type="text" name="indisponibilidad" id="indisponibilidad" required value="{{ indisponibilidad or '' }}">
         </div>
         <div class="form-group">
-            <label for="servicios">Servicios a notificar (uno por línea, formato: SEDE - SERVICIO)</label>
+            <label for="servicios">Servicios a notificar (uno por linea)</label>
             <textarea name="servicios" id="servicios" rows="5" required>{{ servicios or '' }}</textarea>
         </div>
         <button type="submit">Siguiente</button>
@@ -57,6 +132,16 @@
     {% if mostrar_tabla %}
     <div class="tabla-resultados">
         <h3>Servicios por Cliente</h3>
+        <!-- Botón para agregar nueva fila de cliente -->
+        <div id="agregar-cliente-div" style="margin: 1.5rem 0; text-align: center;">
+            <select id="nuevo-cliente-nombre" style="padding:0.5rem; border-radius:6px; border:1px solid #ccc; width:250px;">
+                <option value="">Selecciona un cliente...</option>
+                {% for c in clientes %}
+                <option value="{{ c.nombre }}">{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+            <button id="btn-agregar-cliente" style="margin-left:10px;">Agregar Cliente</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -69,41 +154,62 @@
                 <!-- La tabla se llenará con JS -->
             </tbody>
         </table>
+        <div style="text-align:center; margin-top:2rem;">
+            <a href="{{ url_for('dashboard_bp.dashboard') }}">
+                <button type="button" class="btn-dashboard">
+                    Volver al Dashboard
+                </button>
+            </a>
+        </div>
     </div>
-    <script id="clientes-json" type="application/json">
-    {{ clientes|map(attribute='nombre')|list|tojson }}
+    {% endif %}
+</div>
+
+<script>
+function calcularDuracion() {
+    const inicio = document.getElementById('fecha_inicio').value;
+    const fin = document.getElementById('fecha_fin').value;
+    const duracionInput = document.getElementById('duracion');
+    if (inicio && fin) {
+        const start = new Date(inicio);
+        const end = new Date(fin);
+        if (end > start) {
+            const diffMs = end - start;
+            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMin = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            let duracion = '';
+            if (diffHrs > 0) duracion += diffHrs + ' horas ';
+            if (diffMin > 0) duracion += diffMin + ' minutos';
+            duracionInput.value = duracion.trim();
+        } else {
+            duracionInput.value = '';
+            alert("La fecha/hora fin debe ser posterior a la fecha/hora inicio.");
+            document.getElementById('fecha_fin').value = '';
+            document.getElementById('fecha_fin').focus();
+        }
+    } else {
+        duracionInput.value = '';
+    }
+}
+document.getElementById('fecha_inicio').addEventListener('change', calcularDuracion);
+document.getElementById('fecha_fin').addEventListener('change', calcularDuracion);
+window.addEventListener('DOMContentLoaded', calcularDuracion);
+</script>
+
+{% if mostrar_tabla %}
+<script id="clientes-json" type="application/json">
+{{ clientes|map(attribute='nombre')|list|tojson }}
+</script>
+<script id="correos-clientes-json" type="application/json">
+{{ correos_clientes|tojson }}
 </script>
 <script>
 const clientes = JSON.parse(document.getElementById('clientes-json').textContent);
+const correosClientes = JSON.parse(document.getElementById('correos-clientes-json').textContent);
 const servicios = `{{ servicios|replace('\r\n', '\n')|replace('\r', '\n')|safe }}`.split('\n').filter(s => s.trim());
 
-function normalizar(str) {
-    return str.replace(/\d+/g, '').toUpperCase();
-}
 function buscarCliente(sedeServicio) {
-    const sede = sedeServicio.split('-')[0].trim();
-    const cleaned = normalizar(sede);
-    const words = cleaned.split(/[\s_\/]+/).filter(w => w && w.length > 1 && w !== 'IC' && w !== 'SP');
-    for (let i = 0; i < words.length; i++) {
-        const word = words[i];
-        const matches = clientes.filter(c => normalizar(c).includes(word));
-        if (matches.length === 1) return matches[0];
-        if (matches.length > 1) {
-            for (let j = i + 1; j <= words.length; j++) {
-                const combo = words.slice(i, j).join(' ');
-                const comboMatches = matches.filter(c => normalizar(c).includes(combo));
-                if (comboMatches.length === 1) return comboMatches[0];
-            }
-        }
-    }
-    for (let size = 2; size <= words.length; size++) {
-        for (let start = 0; start <= words.length - size; start++) {
-            const combo = words.slice(start, start + size).join(' ');
-            const matches = clientes.filter(c => normalizar(c).includes(combo));
-            if (matches.length === 1) return matches[0];
-        }
-    }
-    return '';
+    return matchClienteBySede(sedeServicio, clientes);
 }
 const serviciosPorCliente = {};
 const noIdentificados = [];
@@ -122,80 +228,245 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
-function generarHtmlCorreo(cliente, servicios) {
-    // Obtén los valores del formulario usando Jinja variables
-    const detalle = `{{ detalle|e }}`;
-    const crq = `{{ crq|e }}`;
-    const observacion = `{{ observacion|e }}`;
-    const fecha_inicio = `{{ fecha_inicio|e }}`;
-    const fecha_fin = `{{ fecha_fin|e }}`;
-    const duracion = `{{ duracion|e }}`;
-    const indisponibilidad = `{{ indisponibilidad|e }}`;
+
+// Formatea fecha a DD/MM/YYYY HH:mm
+function formatearFecha(fechaIso) {
+    if (!fechaIso) return '';
+    const d = new Date(fechaIso);
+    if (isNaN(d)) return '';
+    const pad = n => n < 10 ? '0' + n : n;
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function generarHtmlTabla(cliente, servicios) {
+    // Usar el valor actual del campo asunto
+    const asunto = document.getElementById('asunto') ? document.getElementById('asunto').value : '{{ asunto or "" }}';
+    const crq = document.getElementById('crq') ? document.getElementById('crq').value : '{{ crq or "" }}';
+    const observacion = document.getElementById('observacion') ? document.getElementById('observacion').value : '{{ observacion or "Mantenimiento preventivo" }}';
+    const detalle_trabajos = document.getElementById('detalle_trabajos') ? document.getElementById('detalle_trabajos').value : '{{ detalle_trabajos or "Mantener la disponibilidad de los equipos al 100%" }}';
+    const fecha_inicio = formatearFecha(document.getElementById('fecha_inicio') ? document.getElementById('fecha_inicio').value : '{{ fecha_inicio or "" }}');
+    const fecha_fin = formatearFecha(document.getElementById('fecha_fin') ? document.getElementById('fecha_fin').value : '{{ fecha_fin or "" }}');
+    const duracion = document.getElementById('duracion') ? document.getElementById('duracion').value : '{{ duracion or "" }}';
+    const indisponibilidad = document.getElementById('indisponibilidad') ? document.getElementById('indisponibilidad').value : '{{ indisponibilidad or "" }}';
     const serviciosAfectados = servicios.map(escapeHtml).join('<br>');
+    const logoUrl = "https://1000marcas.net/wp-content/uploads/2021/02/Claro-Logo-1024x580.png";
+
     return `
-<p>Estimado equipo,</p>
-<p>Se les informa sobre la ejecución de un trabajo emergente según los siguientes detalles:</p>
-<table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; font-family: Arial;">
-<tr><th align="left">CLIENTE</th><td>${escapeHtml(cliente)}</td></tr>
-<tr><th align="left">DETALLE TRABAJO</th><td>${detalle}</td></tr>
-<tr><th align="left">CRQ</th><td>${crq}</td></tr>
-<tr><th align="left">OBSERVACIÓN</th><td>${observacion}</td></tr>
-<tr><th align="left">FECHA / HORA INICIO</th><td>${fecha_inicio}</td></tr>
-<tr><th align="left">FECHA / HORA FIN</th><td>${fecha_fin}</td></tr>
-<tr><th align="left">SERVICIOS AFECTADOS</th><td>${serviciosAfectados}</td></tr>
-<tr><th align="left">DURACIÓN DE TRABAJOS</th><td>${duracion}</td></tr>
-<tr><th align="left">TIEMPO DE INDISPONIBILIDAD</th><td>${indisponibilidad}</td></tr>
-</table>
-<p><i>Nota: Se considerará aceptado el mantenimiento en caso de no contar con una respuesta dentro de las 48 horas luego de realizada la notificación.</i></p>
-<p>Saludos cordiales,<br>Equipo Claro</p>
-`;
+    <div style="text-align:center;">
+        <img src="${logoUrl}" alt="Claro" style="height:60px; margin-bottom:10px;">
+        <h2 style="font-family:Arial; color:#b71c1c; margin-top:0; margin-bottom:30px;">TRABAJO EMERGENTE</h2>
+        <table class="tabla-moderna" border="0" cellspacing="0" cellpadding="0" style="margin:auto; border-collapse:separate; border-radius:12px; font-family:Arial; box-shadow:0 2px 12px #0002; width:90%;">
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">ASUNTO</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(asunto)}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">CRQ</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(crq)}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">OBSERVACIÓN</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(observacion)}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DETALLE DE TRABAJOS</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(detalle_trabajos)}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA INICIO</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_inicio}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA FIN</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_fin}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">SERVICIOS AFECTADOS</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${serviciosAfectados}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DURACIÓN DE TRABAJOS</th>
+                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(duracion)}</td>
+            </tr>
+            <tr>
+                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">TIEMPO DE INDISPONIBILIDAD</th>
+                <td style="text-align:center;">${escapeHtml(indisponibilidad)}</td>
+            </tr>
+        </table>
+        <p style="font-family:Arial; text-align:center; margin-top:24px;"><i>Nota: Se considerará aceptado el mantenimiento en caso de no contar con una respuesta dentro de las 48 horas luego de realizada la notificación.</i></p>
+    </div>
+    `;
 }
-function copiarAlPortapapeles(html) {
-    // Esto solo funciona en Windows con un script Python externo.
-    // Aquí solo mostramos el HTML y damos instrucciones.
-    const temp = document.createElement('textarea');
-    temp.value = html;
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    document.body.removeChild(temp);
-    alert('El contenido HTML ha sido copiado al portapapeles.\nPega en Outlook o ejecuta el script Python para formato enriquecido.');
+
+function copiarHtmlAlPortapapeles(html) {
+    if (navigator.clipboard && window.ClipboardItem) {
+        const blob = new Blob([html], { type: "text/html" });
+        const data = [new ClipboardItem({ "text/html": blob })];
+        navigator.clipboard.write(data).then(() => {
+            alert("El contenido se ha copiado al portapapeles. Pega en el cuerpo del correo.");
+        });
+    } else {
+        // Fallback: copia como texto plano
+        const temp = document.createElement('textarea');
+        temp.value = html;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        alert("El contenido se ha copiado como texto plano. Pega en el cuerpo del correo.");
+    }
 }
+
+function generarMailto(cliente, servicios) {
+    // Copiar HTML al portapapeles ANTES de abrir el mailto
+    const html = generarHtmlTabla(cliente, servicios);
+    copiarHtmlAlPortapapeles(html);
+
+    const to = correosClientes[cliente] || '';
+    const cc = "tecoymcorpcnoc@claro.com.ec;soporte_empresas@claro.com.ec";
+    const asunto = document.getElementById('asunto') ? document.getElementById('asunto').value : '{{ asunto or "" }}';
+    const subject = asunto;
+    const body = ''; // Vacío para pegar el HTML
+
+    const mailtoUrl = `mailto:${encodeURIComponent(to)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+}
+
+// Renderizar la tabla con listas drag & drop
 for (const [cliente, servicios] of Object.entries(serviciosPorCliente)) {
     const tr = document.createElement('tr');
     const tdCliente = document.createElement('td');
     tdCliente.textContent = cliente;
+
     const tdServicios = document.createElement('td');
-    tdServicios.innerHTML = servicios.map(s => `<div>${escapeHtml(s)}</div>`).join('');
+    const ul = document.createElement('ul');
+    ul.className = 'servicios-list';
+    ul.id = 'servicios-' + btoa(cliente).replace(/[^a-zA-Z0-9]/g, '');
+    servicios.forEach(servicio => {
+        const li = document.createElement('li');
+        li.textContent = servicio;
+        li.className = 'servicio-item';
+        ul.appendChild(li);
+    });
+    tdServicios.appendChild(ul);
+
     const tdAccion = document.createElement('td');
     const btn = document.createElement('button');
     btn.textContent = "Enviar correo";
     btn.onclick = function() {
-        const html = generarHtmlCorreo(cliente, servicios);
-        copiarAlPortapapeles(html);
+        // Al hacer clic, toma los servicios actuales de la lista
+        const serviciosActuales = Array.from(ul.querySelectorAll('li')).map(li => li.textContent);
+        generarMailto(cliente, serviciosActuales);
     };
     tdAccion.appendChild(btn);
+
     tr.appendChild(tdCliente);
     tr.appendChild(tdServicios);
     tr.appendChild(tdAccion);
     tbody.appendChild(tr);
+    // Inicializa SortableJS para esta lista
+    new Sortable(ul, {
+        group: 'servicios',
+        animation: 150
+    });
 }
-// Fila para no identificados
+
+// Fila para no identificados, también drag & drop
 if (noIdentificados.length > 0) {
     const tr = document.createElement('tr');
     const tdCliente = document.createElement('td');
     tdCliente.textContent = "NO IDENTIFICADO";
     tdCliente.style.color = "red";
     const tdServicios = document.createElement('td');
-    tdServicios.innerHTML = noIdentificados.map(s => `<div>${escapeHtml(s)}</div>`).join('');
+    const ul = document.createElement('ul');
+    ul.className = 'servicios-list';
+    ul.id = 'servicios-NOIDENTIFICADO';
+    noIdentificados.forEach(servicio => {
+        const li = document.createElement('li');
+        li.textContent = servicio;
+        li.className = 'servicio-item';
+        ul.appendChild(li);
+    });
+    tdServicios.appendChild(ul);
     const tdAccion = document.createElement('td');
     tdAccion.textContent = "-";
     tr.appendChild(tdCliente);
     tr.appendChild(tdServicios);
     tr.appendChild(tdAccion);
     tbody.appendChild(tr);
+
+    new Sortable(ul, {
+        group: 'servicios',
+        animation: 150
+    });
 }
+
+// Inicializar Select2 para filtrado de clientes
+$(document).ready(function() {
+    $('#nuevo-cliente-nombre').select2({
+        width: '250px',
+        placeholder: 'Selecciona un cliente...',
+        allowClear: true
+    });
+});
+
+// Botón para agregar nueva fila de cliente manualmente (solo clientes existentes)
+document.getElementById('btn-agregar-cliente').onclick = function() {
+    const select = document.getElementById('nuevo-cliente-nombre');
+    const nombre = select.value.trim();
+    if (!nombre) {
+        alert("Debes seleccionar un cliente.");
+        return;
+    }
+    // Evitar duplicados visuales
+    if ([...document.querySelectorAll('#tabla-servicios tr td:first-child')].some(td => td.textContent.trim().toUpperCase() === nombre.toUpperCase())) {
+        alert("Ya existe una fila con ese nombre de cliente.");
+        return;
+    }
+
+    const tr = document.createElement('tr');
+    const tdCliente = document.createElement('td');
+    tdCliente.textContent = nombre;
+
+    const tdServicios = document.createElement('td');
+    const ul = document.createElement('ul');
+    ul.className = 'servicios-list';
+    ul.id = 'servicios-' + btoa(nombre).replace(/[^a-zA-Z0-9]/g, '');
+    tdServicios.appendChild(ul);
+
+    const tdAccion = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.textContent = "Enviar correo";
+    btn.onclick = function() {
+        const serviciosActuales = Array.from(ul.querySelectorAll('li')).map(li => li.textContent);
+        generarMailto(nombre, serviciosActuales);
+    };
+    tdAccion.appendChild(btn);
+
+    tr.appendChild(tdCliente);
+    tr.appendChild(tdServicios);
+    tr.appendChild(tdAccion);
+
+    // Insertar antes de "NO IDENTIFICADO" si existe, si no, al final
+    const tbody = document.getElementById('tabla-servicios');
+    const noIdentificadoRow = Array.from(tbody.rows).find(row =>
+        row.cells[0] && row.cells[0].textContent.trim().toUpperCase() === "NO IDENTIFICADO"
+    );
+    if (noIdentificadoRow) {
+        tbody.insertBefore(tr, noIdentificadoRow);
+    } else {
+        tbody.appendChild(tr);
+    }
+
+    new Sortable(ul, {
+        group: 'servicios',
+        animation: 150
+    });
+
+    // Limpiar selección de Select2
+    $('#nuevo-cliente-nombre').val(null).trigger('change');
+};
 </script>
-    {% endif %}
+{% endif %}
 </body>
 </html>

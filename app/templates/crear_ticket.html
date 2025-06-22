@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+    <script src="{{ url_for('static', filename='js/cliente_matching.js') }}"></script>
     <!-- jQuery y Select2 JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -112,7 +111,7 @@
 
         <div class="form-group">
             <label for="asunto">Asunto del caso</label>
-            <textarea name="asunto" id="asunto" required></textarea> {# Mantener required para la creación del ticket #}
+            <textarea name="asunto" id="asunto" required></textarea>
         </div>
 
         <div class="form-group">
@@ -161,7 +160,6 @@
             </select>
             </div>
         {% else %}
-            <!-- Campo oculto si no tiene permiso para asignar -->
             <input type="hidden" name="asignado" value="{{ ingenieros[0].id if ingenieros else '' }}">
         {% endif %}
 
@@ -170,20 +168,13 @@
             <input type="text" name="actualizacion" id="actualizacion">
         </div>
 
-        <!-- Nuevo botón para abrir correo -->
         <button type="button" id="btn-abrir-correo" style="display: none;">Enviar Correo</button>
-
         <button type="submit">Crear Ticket</button>
-
-        {# REMOVED: Campo oculto para la lista de nombres de clientes #}
-        {# <input type="hidden" id="cliente-names-data" value="{{ clientes | map(attribute='nombre') | list | tojson }}"> #}
-
     </form>
     <script>
         // Define a global variable to hold client names data
-    let clienteNames = [];
+        let clienteNames = [];
     </script>
-    {# ADDED: Script tag to embed JSON data #}
     <script type="application/json" id="cliente-names-json">
         {{ clientes | map(attribute='nombre') | list | tojson | safe }}
     </script>
@@ -199,9 +190,7 @@
             console.log("Cliente names data loaded:", clienteNames);
         } catch (e) {
             console.error("Error parsing cliente names JSON:", e);
-            // Handle the error, maybe display a message to the user
         }
-
 
         $('.select2').select2({
             width: '100%',
@@ -213,148 +202,81 @@
         const clienteSelect = $('#cliente');
         const asuntoInput = $('#asunto');
         const sedeInput = $('#sede');
-        const pidInput = $('#pid'); // Obtener referencia al campo PID
+        const pidInput = $('#pid');
 
-        // Define el prefijo para el asunto proactivo
         const proactiveSubjectPrefix = "MONITOREO:: PERDIDA DE ENLACE ";
         console.log("Proactive subject prefix:", proactiveSubjectPrefix);
 
-
-        // Función para actualizar Asunto, seleccionar cliente y extraer PID basado en Sede y Tipo
         function updateAsuntoAndSelectClient() {
             console.log("updateAsuntoAndSelectClient called.");
             const tipo = tipoSelect.val();
-            const sedeValue = sedeInput.val().trim(); // Obtener valor actual de sede (trim)
-            const currentAsuntoValue = asuntoInput.val(); // Obtener valor actual de asunto (sin trim)
+            const sedeValue = sedeInput.val().trim();
+            const currentAsuntoValue = asuntoInput.val();
             console.log("updateAsuntoAndSelectClient - Tipo:", tipo, "Sede Value:", sedeValue, "Current Asunto:", currentAsuntoValue);
 
             // --- Nueva lógica para extraer PID de Sede ---
-            const pidMatch = sedeValue.match(/\d{8,}/); // Buscar 8 o más dígitos consecutivos
+            const pidMatch = sedeValue.match(/\d{8,}/);
             if (pidMatch) {
                 console.log("PID found in Sede:", pidMatch[0]);
-                pidInput.val(pidMatch[0]); // Establecer el valor del campo PID
+                pidInput.val(pidMatch[0]);
             } else {
                 console.log("No PID (>= 8 digits) found in Sede. Clearing PID field.");
-                pidInput.val(''); // Limpiar el campo PID si no se encuentra
+                pidInput.val('');
             }
             // --- Fin lógica para extraer PID ---
-
 
             // Intentar seleccionar el cliente basado en el valor actual de sede
             attemptClientSelection(sedeValue);
 
             // Si el tipo es Proactivo, actualizar el campo Asunto
             if (tipo === 'Proactivo') {
-                // Solo autocompletar si el campo asunto está vacío o empieza con el prefijo
                 if (!currentAsuntoValue.trim() || currentAsuntoValue.startsWith(proactiveSubjectPrefix)) {
                     asuntoInput.val(proactiveSubjectPrefix + sedeValue);
                 }
-            }else {
-                 console.log("updateAsuntoAndSelectClient - Tipo is NOT 'Proactivo'. Not updating Asunto based on Sede.");
-                 // Si el tipo cambia de Proactivo a otro, y el asunto empieza con el prefijo, borrarlo.
-                 // Esto se maneja mejor en handleTipoChange.
+            } else {
+                console.log("updateAsuntoAndSelectClient - Tipo is NOT 'Proactivo'. Not updating Asunto based on Sede.");
             }
         }
 
-
-        // Función para intentar seleccionar un cliente basado en un nombre (Lógica de match mejorada)
         function attemptClientSelection(clientName) {
-    console.log("attemptClientSelection called with clientName:", clientName);
-    if (!clientName) {
+    const match = matchClienteBySede(clientName, clienteNames);
+    if (match) {
+        clienteSelect.val(match).trigger('change.select2');
+    } else {
         clienteSelect.val(null).trigger('change.select2');
-        return;
     }
-
-    // Limpiar números y pasar a mayúsculas para comparar
-    const cleaned = clientName.replace(/\d+/g, '').toUpperCase();
-    const words = cleaned.split(/[\s_]+/).filter(w => w && w.length > 1 && w !== 'IC' && w !== 'SP');
-
-    // Preprocesar nombres de clientes
-    const clientesProcesados = clienteNames.map(n => ({
-        original: n,
-        upper: n.replace(/\d+/g, '').toUpperCase()
-    }));
-
-    // Algoritmo: ir probando con cada palabra, luego con combinaciones crecientes
-    // 1. Probar cada palabra individualmente (en orden)
-    for (let i = 0; i < words.length; i++) {
-        const word = words[i];
-        const matches = clientesProcesados.filter(c => c.upper.includes(word));
-        if (matches.length === 1) {
-            clienteSelect.val(matches[0].original).trigger('change.select2');
-            return;
-        }
-        // Si hay más de uno, intentar con combinaciones de 2, 3, etc.
-        if (matches.length > 1) {
-            for (let j = i + 1; j <= words.length; j++) {
-                const combo = words.slice(i, j).join(' ');
-                const comboMatches = matches.filter(c => c.upper.includes(combo));
-                if (comboMatches.length === 1) {
-                    clienteSelect.val(comboMatches[0].original).trigger('change.select2');
-                    return;
-                }
-            }
-        }
-    }
-
-    // 2. Si no hay match único, probar combinaciones de todas las palabras (más estricto)
-    for (let size = 2; size <= words.length; size++) {
-        for (let start = 0; start <= words.length - size; start++) {
-            const combo = words.slice(start, start + size).join(' ');
-            const matches = clientesProcesados.filter(c => c.upper.includes(combo));
-            if (matches.length === 1) {
-                clienteSelect.val(matches[0].original).trigger('change.select2');
-                return;
-            }
-        }
-    }
-
-    // 3. Si no hay match, deseleccionar
-    clienteSelect.val(null).trigger('change.select2');
 }
 
-
-        // Función para mostrar/ocultar el botón de correo y manejar el prefijo del asunto
         function handleTipoChange() {
             const currentTipo = tipoSelect.val();
-            const currentAsuntoValue = asuntoInput.val(); // Get the current value
+            const currentAsuntoValue = asuntoInput.val();
             console.log("handleTipoChange called. Current Tipo:", currentTipo);
             console.log("handleTipoChange - Current Asunto value:", currentAsuntoValue);
             console.log("handleTipoChange - Proactive Prefix:", proactiveSubjectPrefix);
 
-
             if (currentTipo === 'Proactivo') {
                 console.log("handleTipoChange - Condition: Tipo is 'Proactivo'.");
                 abrirCorreoBtn.show();
-                // Cuando cambia a Proactivo, forzar la actualización del asunto basado en la sede actual
                 updateAsuntoAndSelectClient();
-
-            } else { // Tipo is NOT Proactivo
+            } else {
                 console.log("handleTipoChange - Condition: Tipo is NOT 'Proactivo'.");
                 abrirCorreoBtn.hide();
-                // Si el asunto actualmente empieza con el prefijo proactivo, borrarlo al cambiar de tipo
                 if (currentAsuntoValue.startsWith(proactiveSubjectPrefix)) {
-                     console.log("handleTipoChange - Condition: Asunto starts with prefix. Clearing field.");
-                     asuntoInput.val('');
-                } else {
-                     console.log("handleTipoChange - Condition: Asunto does not start with prefix. Keeping field value.");
+                    console.log("handleTipoChange - Condition: Asunto starts with prefix. Clearing field.");
+                    asuntoInput.val('');
                 }
-                 // Al cambiar de tipo, también re-evaluar la selección del cliente basada solo en la sede
-                 updateAsuntoAndSelectClient();
+                updateAsuntoAndSelectClient();
             }
         }
 
-        // Función para construir y abrir la URL mailto (ahora usa AJAX)
         function openMailto() {
             console.log("openMailto called.");
             const clienteNombre = clienteSelect.val();
             const asunto = asuntoInput.val();
             const sede = sedeInput.val();
-            const tipo = tipoSelect.val(); // Obtener el tipo de ticket
+            const tipo = tipoSelect.val();
             console.log("openMailto - Cliente:", clienteNombre, "Asunto:", asunto, "Sede:", sede, "Tipo:", tipo);
 
-
-            // Validar que los campos necesarios no estén vacíos antes de enviar la solicitud
             if (!clienteNombre || !asunto) {
                 alert("Por favor, selecciona un cliente y escribe un asunto para preparar el correo.");
                 console.log("openMailto - Validation failed.");
@@ -362,22 +284,19 @@
             }
             console.log("openMailto - Validation passed. Sending AJAX request.");
 
-
-            // Realizar solicitud AJAX al servidor
             $.ajax({
-                url: "{{ url_for('ticket_bp.prepare_proactive_email') }}", // Nueva ruta
+                url: "{{ url_for('ticket_bp.prepare_proactive_email') }}",
                 method: 'POST',
                 data: {
                     cliente_nombre: clienteNombre,
-                    asunto: asunto, // Enviar el asunto tal como está en el campo
+                    asunto: asunto,
                     sede: sede,
-                    tipo: tipo // Enviar el tipo de ticket
+                    tipo: tipo
                 },
                 success: function(response) {
                     console.log("AJAX success. Response:", response);
                     if (response.mailto_url) {
                         console.log("Opening mailto URL:", response.mailto_url);
-                        // Abrir el cliente de correo con la URL recibida
                         window.location.href = response.mailto_url;
                     } else {
                         alert("No se pudo preparar la URL del correo.");
@@ -391,18 +310,14 @@
             });
         }
 
-        // Event listeners
-        tipoSelect.on('change', handleTipoChange); // Usar la nueva función
-        sedeInput.on('input', updateAsuntoAndSelectClient); // Llamar al escribir en la sede
-        asuntoInput.on('input', updateAsuntoAndSelectClient); // Mantener listener en asunto por si el usuario edita manualmente
+        tipoSelect.on('change', handleTipoChange);
+        sedeInput.on('input', updateAsuntoAndSelectClient);
+        asuntoInput.on('input', updateAsuntoAndSelectClient);
         abrirCorreoBtn.on('click', openMailto);
 
-        // Inicializar el estado del botón, el asunto y la extracción/selección al cargar la página
         console.log("Calling handleTipoChange on document ready.");
-        handleTipoChange(); // Llamar al cargar para establecer el estado inicial y disparar la primera actualización
+        handleTipoChange();
     });
-</script>
-
-
+    </script>
 </body>
 </html>
