@@ -55,14 +55,14 @@ def dashboard():
                            nombre_usuario=usuario_actual.nombre,
                            ingeniero_turno_id=ingeniero_turno.id if ingeniero_turno else None)
 
+from app.routes.ticket_routes import aplicar_cambios_ticket  # Importa la función centralizada
+
 @dashboard_bp.route('/reasignar_ticket', methods=['POST'])
 def reasignar_ticket():
-    # Verificación de sesión
     usuario_actual = Usuario.query.filter_by(usuario=session.get('usuario')).first()
     if not usuario_actual:
         return jsonify({"error": "Usuario no autenticado"}), 401
 
-    # Solo ingeniero de turno puede reasignar
     if (usuario_actual.tipo == 'ingeniero' and not usuario_actual.de_turno):
         return jsonify({"error": "No tienes permisos para reasignar tickets."}), 403
 
@@ -80,24 +80,13 @@ def reasignar_ticket():
     if ticket.status == 'Terminado':
         return jsonify({"error": "No se puede reasignar un ticket cerrado."}), 403
 
-    anterior_asignado = f"{ticket.asignado.nombre} {ticket.asignado.apellido}" if ticket.asignado else ""
-
     nuevo_asignado = Usuario.query.filter_by(usuario=nuevo_ingeniero).first()
     if not nuevo_asignado:
         return jsonify({"error": "Ingeniero no encontrado"}), 404
 
-    if f"{nuevo_asignado.nombre} {nuevo_asignado.apellido}" != anterior_asignado:
-        nuevo_historial = Historial(
-            ticket_id=ticket.id,
-            usuario=usuario_actual,
-            cambio=f"Asignado: '{anterior_asignado}' → '{nuevo_asignado.nombre} {nuevo_asignado.apellido}'",
-            fecha_hora=datetime.now(zona_ecuador)
-        )
-        db.session.add(nuevo_historial)
-        ticket.asignado_id = nuevo_asignado.id
-        db.session.commit()
+    cambios = aplicar_cambios_ticket(ticket, usuario_actual, {'asignado': nuevo_asignado})
 
-    return jsonify({"status": "ok"}), 200
+    return jsonify({"status": "ok", "cambios": cambios}), 200
 
 @dashboard_bp.route('/historico')
 def historico():

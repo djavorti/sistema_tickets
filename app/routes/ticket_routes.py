@@ -7,6 +7,97 @@ from app.models import Ticket, Usuario, Cliente, Historial
 from app.utils import zona_ecuador
 from sqlalchemy import extract
 import urllib.parse
+from app.models.sesion_activa import SesionActiva
+
+def actualizar_actividad(usuario_id):
+    sesion = SesionActiva.query.filter_by(usuario_id=usuario_id).first()
+    if sesion:
+        sesion.ultima_actividad = datetime.now(zona_ecuador)
+        db.session.commit()
+
+def aplicar_cambios_ticket(ticket, usuario_actual, cambios_dict):
+    cambios = []
+    # --- Estado ---
+    if 'status' in cambios_dict and cambios_dict['status'] != ticket.status:
+        anterior_status = ticket.status
+        nuevo_status = cambios_dict['status']
+        if nuevo_status.lower() == "terminado":
+            ticket.fecha_fin = datetime.now(zona_ecuador)
+        elif anterior_status.lower() == "terminado":
+            ticket.fecha_fin = None
+        cambios.append(f"Estado: '{anterior_status}' → '{nuevo_status}'")
+        ticket.status = nuevo_status
+
+    # --- Tipo ---
+    if 'tipo' in cambios_dict and cambios_dict['tipo'] != ticket.tipo:
+        cambios.append(f"Tipo: '{ticket.tipo}' → '{cambios_dict['tipo']}'")
+        ticket.tipo = cambios_dict['tipo']
+
+    # --- Medio ---
+    if 'medio' in cambios_dict and cambios_dict['medio'] != ticket.medio:
+        cambios.append(f"Medio: '{ticket.medio}' → '{cambios_dict['medio']}'")
+        ticket.medio = cambios_dict['medio']
+
+    # --- Detalle ---
+    if 'detalle' in cambios_dict and cambios_dict['detalle'] != ticket.detalle:
+        cambios.append(f"Detalle: '{ticket.detalle}' → '{cambios_dict['detalle']}'")
+        ticket.detalle = cambios_dict['detalle']
+
+    # --- PID ---
+    if 'pid' in cambios_dict and cambios_dict['pid'] != ticket.pid:
+        cambios.append(f"PID: '{ticket.pid}' → '{cambios_dict['pid']}'")
+        ticket.pid = cambios_dict['pid']
+
+    # --- Sede ---
+    if 'sede' in cambios_dict and cambios_dict['sede'] != ticket.sede:
+        cambios.append(f"Sede: '{ticket.sede}' → '{cambios_dict['sede']}'")
+        ticket.sede = cambios_dict['sede']
+
+    # --- TT Remedy ---
+    if 'tt_remedy' in cambios_dict and cambios_dict['tt_remedy'] != ticket.tt_remedy:
+        cambios.append(f"TT Remedy: '{ticket.tt_remedy}' → '{cambios_dict['tt_remedy']}'")
+        ticket.tt_remedy = cambios_dict['tt_remedy']
+
+    # --- Cliente ---
+    if 'cliente' in cambios_dict and cambios_dict['cliente'] and cambios_dict['cliente'] != (ticket.cliente.nombre if ticket.cliente else ""):
+        anterior_cliente = ticket.cliente.nombre if ticket.cliente else ""
+        cambios.append(f"Cliente: '{anterior_cliente}' → '{cambios_dict['cliente']}'")
+        ticket.cliente = Cliente.query.filter_by(nombre=cambios_dict['cliente']).first()
+
+    # --- Asignado ---
+    if 'asignado' in cambios_dict and cambios_dict['asignado']:
+        anterior_asignado = f"{ticket.asignado.nombre} {ticket.asignado.apellido}" if ticket.asignado else ""
+        nuevo_asignado = cambios_dict['asignado']
+        if f"{nuevo_asignado.nombre} {nuevo_asignado.apellido}" != anterior_asignado:
+            cambios.append(f"Asignado: '{anterior_asignado}' → '{nuevo_asignado.nombre} {nuevo_asignado.apellido}'")
+            ticket.asignado = nuevo_asignado
+
+    # --- Actualización ---
+    if 'actualizacion' in cambios_dict and cambios_dict['actualizacion']:
+        anterior_actualizacion = ticket.actualizacion
+        nuevo_actualizacion = cambios_dict['actualizacion']
+        if nuevo_actualizacion != anterior_actualizacion:
+            if not cambios:
+                cambios.append(f"Actualización: {nuevo_actualizacion}")
+            else:
+                cambios.append(f"Nueva Actualización: {nuevo_actualizacion}")
+            ticket.actualizacion = nuevo_actualizacion
+
+    # --- Registrar historial si hay cambios ---
+    if cambios:
+        nuevo_historial = Historial(
+            ticket_id=ticket.id,
+            usuario=usuario_actual,
+            cambio="\n".join(cambios),
+            fecha_hora=datetime.now(zona_ecuador)
+        )
+        db.session.add(nuevo_historial)
+        db.session.commit()
+        actualizar_actividad(usuario_actual.id)
+    else:
+        db.session.commit()
+    return cambios
+
 
 ticket_bp = Blueprint('ticket_bp', __name__)
 
@@ -113,7 +204,7 @@ def crear_ticket():
 
         db.session.add(nuevo_ticket)
         db.session.commit()
-
+        actualizar_actividad(usuario_logueado.id)
         flash('Ticket creado exitosamente', 'success')
 
         # El POST siempre redirige al dashboard
@@ -207,9 +298,6 @@ def prepare_proactive_email():
     # Devolver la URL mailto como respuesta JSON
     return jsonify({'mailto_url': mailto_url})
 
-# --- Fin Nueva ruta ---
-
-
 @ticket_bp.route('/editar_ticket/<ticket_id>', methods=['GET', 'POST'])
 def editar_ticket(ticket_id):
     if 'usuario' not in session:
@@ -222,109 +310,27 @@ def editar_ticket(ticket_id):
     historial = Historial.query.filter_by(ticket_id=ticket_id).order_by(Historial.fecha_hora.desc()).all()
 
     if request.method == 'POST':
-
-        print(request.form)  # Ver qué datos llegan
-
-        cambios = []
-
-        # Valores anteriores
-        anterior_status = ticket.status
-        anterior_tipo = ticket.tipo
-        anterior_medio = ticket.medio
-        anterior_detalle = ticket.detalle
-        anterior_pid = ticket.pid
-        anterior_sede = ticket.sede
-        anterior_cliente = ticket.cliente.nombre if ticket.cliente else ""
-        anterior_asignado = f"{ticket.asignado.nombre} {ticket.asignado.apellido}" if ticket.asignado else ""
-        anterior_actualizacion = ticket.actualizacion
-        anterior_tt_remedy = ticket.tt_remedy
-
-        # Nuevos valores del formulario
-        nuevo_status = request.form['status']
-        nuevo_tipo = request.form['tipo']
-        nuevo_medio = request.form['medio']
-        nuevo_detalle = request.form.get('detalle', '').strip() # Usar .get() para opcional
-        nuevo_pid = request.form.get('pid', '').strip() # Usar .get() para opcional
-        nuevo_sede = request.form.get('sede', '').strip() # Usar .get() para opcional
-        nuevo_cliente = Cliente.query.filter_by(nombre=request.form['cliente']).first()
+        usuario_actual = Usuario.query.filter_by(usuario=session['usuario']).first()
+        cambios_dict = {
+            'status': request.form['status'],
+            'tipo': request.form['tipo'],
+            'medio': request.form['medio'],
+            'detalle': request.form.get('detalle', '').strip(),
+            'pid': request.form.get('pid', '').strip(),
+            'sede': request.form.get('sede', '').strip(),
+            'tt_remedy': request.form.get('tt_remedy', '').strip(),
+            'cliente': request.form['cliente'],
+            'actualizacion': request.form.get('actualizacion', '').strip()
+        }
         asignado_id = request.form.get('asignado')
         if asignado_id:
-            nuevo_asignado = Usuario.query.get(asignado_id)
+            cambios_dict['asignado'] = Usuario.query.get(asignado_id)
         else:
-            nuevo_asignado = ticket.asignado  # Mantener el asignado anterior si no viene en el formulario
-        nuevo_actualizacion = request.form.get('actualizacion', '').strip() # Usar .get() para opcional
-        nuevo_tt_remedy = request.form.get('tt_remedy', '').strip()
+            cambios_dict['asignado'] = ticket.asignado
 
-
-        # Comparar campos y registrar cambios
-        if nuevo_status != anterior_status:
-            # Si cambia a 'Terminado', registrar fecha de fin
-            if nuevo_status.lower() == "terminado":
-                ticket.fecha_fin = datetime.now(zona_ecuador)
-            # Si cambia de 'Terminado' a otro estado, eliminar fecha_fin
-            elif anterior_status.lower() == "terminado":
-                 ticket.fecha_fin = None
-            cambios.append(f"Estado: '{anterior_status}' → '{nuevo_status}'")
-            ticket.status = nuevo_status
-
-        if nuevo_tipo != anterior_tipo:
-            cambios.append(f"Tipo: '{anterior_tipo}' → '{nuevo_tipo}'")
-            ticket.tipo = nuevo_tipo
-
-        if nuevo_medio != anterior_medio:
-            cambios.append(f"Medio: '{anterior_medio}' → '{nuevo_medio}'")
-            ticket.medio = nuevo_medio
-
-        # Comparar campos opcionales, solo si el nuevo valor es diferente del anterior
-        if nuevo_detalle != anterior_detalle:
-            cambios.append(f"Detalle: '{anterior_detalle}' → '{nuevo_detalle}'")
-            ticket.detalle = nuevo_detalle
-
-        if nuevo_pid != anterior_pid:
-            cambios.append(f"PID: '{anterior_pid}' → '{nuevo_pid}'")
-            ticket.pid = nuevo_pid
-
-        if nuevo_sede != anterior_sede:
-            cambios.append(f"Sede: '{anterior_sede}' → '{nuevo_sede}'")
-            ticket.sede = nuevo_sede
-
-        if nuevo_tt_remedy != anterior_tt_remedy:
-            cambios.append(f"TT Remedy: '{anterior_tt_remedy}' → '{nuevo_tt_remedy}'")
-            ticket.tt_remedy = nuevo_tt_remedy
-
-        if nuevo_cliente and nuevo_cliente.nombre != anterior_cliente:
-            cambios.append(f"Cliente: '{anterior_cliente}' → '{nuevo_cliente.nombre}'")
-            ticket.cliente = nuevo_cliente
-
-        if nuevo_asignado and f"{nuevo_asignado.nombre} {nuevo_asignado.apellido}" != anterior_asignado:
-            cambios.append(f"Asignado: '{anterior_asignado}' → '{nuevo_asignado.nombre} {nuevo_asignado.apellido}'")
-            ticket.asignado = nuevo_asignado
-
-        # Solo registrar actualización si el texto ha cambiado y no está vacío
-        if nuevo_actualizacion and nuevo_actualizacion != anterior_actualizacion:
-             # Si hay cambios en otros campos, la actualización se añade como un cambio más.
-             # Si solo cambia la actualización, se registra solo la actualización.
-             if not cambios: # Si no hay otros cambios, solo registramos la actualización
-                 cambios.append(f"Actualización: {nuevo_actualizacion}")
-             else: # Si hay otros cambios, añadimos la actualización al final de la lista de cambios
-                 cambios.append(f"Nueva Actualización: {nuevo_actualizacion}")
-             ticket.actualizacion = nuevo_actualizacion # Actualizar el campo en el ticket
-
-
-        # Registrar historial si hay cambios
-        if cambios:
-            nuevo_historial = Historial(
-                ticket_id=ticket.id,
-                usuario=Usuario.query.filter_by(usuario=session['usuario']).first(),
-                cambio="\n".join(cambios),
-                fecha_hora=datetime.now(zona_ecuador)
-            )
-            db.session.add(nuevo_historial)
-
-        db.session.commit()
+        aplicar_cambios_ticket(ticket, usuario_actual, cambios_dict)
         flash('Ticket actualizado correctamente.')
         return redirect(url_for('ticket_bp.editar_ticket', ticket_id=ticket.id))
-
 
     return render_template(
         'editar_ticket.html',
