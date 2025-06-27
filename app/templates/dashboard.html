@@ -420,6 +420,18 @@
     });
   });
 </script>
+<script>
+setInterval(function() {
+  fetch('/check_session')
+    .then(response => response.json())
+    .then(data => {
+      if (!data.active) {
+        window.location.href = "{{ url_for('auth_bp.logout') }}";
+      }
+    });
+}, 10000); // cada 10 segundos
+</script>
 <div id="custom-tooltip" class="tooltip"></div>
 </body>
+
 </html>

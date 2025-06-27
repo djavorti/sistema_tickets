@@ -83,3 +83,14 @@ def logout():
     session.pop('de_turno', None)
     session.pop('usuario_id', None)
     return redirect(url_for('auth_bp.login'))
+
+from flask import jsonify
+
+@auth_bp.route('/check_session')
+def check_session():
+    if 'usuario_id' not in session:
+        
+        return jsonify({'active': False})
+        
+    sesion = SesionActiva.query.filter_by(usuario_id=session['usuario_id']).first()
+    return jsonify({'active': bool(sesion)})
