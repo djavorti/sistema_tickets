@@ -212,6 +212,10 @@ def crear_ticket():
 
     # GET: preparar formulario
     clientes = Cliente.query.all()
+    clientes_json = [
+        {"nombre": c.nombre, "nota": c.nota or ""}
+        for c in clientes
+    ]
     ingenieros = Usuario.query.filter_by(tipo='ingeniero').all()
 
     # Generar un ID provisional solo para mostrar en el formulario GET
@@ -234,7 +238,7 @@ def crear_ticket():
         id_tt=id_tt_provisional, # Pasar el ID provisional al template
         status="Pendiente",
         fecha_inicio=hoy.strftime('%Y-%m-%d %H:%M:%S'), # Pasar fecha/hora actual para display
-        clientes=clientes, # Pasamos la lista de objetos Cliente
+        clientes=clientes_json, # Pasamos la lista de objetos Cliente
         ingenieros=ingenieros,
         usuario_logueado=usuario_logueado
     )

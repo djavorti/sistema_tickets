@@ -147,7 +147,7 @@ Nota: Esta nueva herramientas esta sujeta a cambios y mejoras continuas. Si encu
                 <tr>
                     <th>Cliente</th>
                     <th>Servicios</th>
-                    <th>Acción</th>
+                    <th>Accion</th>
                 </tr>
             </thead>
             <tbody id="tabla-servicios">
@@ -240,8 +240,9 @@ function formatearFecha(fechaIso) {
 
 function generarHtmlTabla(cliente, servicios) {
     // Usar el valor actual del campo asunto
-    const asunto = document.getElementById('asunto') ? document.getElementById('asunto').value : '{{ asunto or "" }}';
     const crq = document.getElementById('crq') ? document.getElementById('crq').value : '{{ crq or "" }}';
+    const asunto = document.getElementById('asunto') ? document.getElementById('asunto').value : '{{ asunto or "" }}';
+    const subject = `TRABAJO PROGRAMADO :: ${crq} ${asunto}`;
     const observacion = document.getElementById('observacion') ? document.getElementById('observacion').value : '{{ observacion or "Mantenimiento preventivo" }}';
     const detalle_trabajos = document.getElementById('detalle_trabajos') ? document.getElementById('detalle_trabajos').value : '{{ detalle_trabajos or "Mantener la disponibilidad de los equipos al 100%" }}';
     const fecha_inicio = formatearFecha(document.getElementById('fecha_inicio') ? document.getElementById('fecha_inicio').value : '{{ fecha_inicio or "" }}');
@@ -252,10 +253,11 @@ function generarHtmlTabla(cliente, servicios) {
     const logoUrl = "https://1000marcas.net/wp-content/uploads/2021/02/Claro-Logo-1024x580.png";
 
     return `
-    <div style="text-align:center;">
-        <img src="${logoUrl}" alt="Claro" style="height:60px; margin-bottom:10px;">
-        <h2 style="font-family:Arial; color:#b71c1c; margin-top:0; margin-bottom:30px;">TRABAJO EMERGENTE</h2>
-        <table class="tabla-moderna" border="0" cellspacing="0" cellpadding="0" style="margin:auto; border-collapse:separate; border-radius:12px; font-family:Arial; box-shadow:0 2px 12px #0002; width:90%;">
+    <div>
+        <div style="text-align:center;">
+            <img src="${logoUrl}" alt="Claro" style="height:60px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto;">
+        </div>
+        <h2 style="font-family:Arial; color:#b71c1c; margin-top:0; margin-bottom:30px; text-align:center;">TRABAJO EMERGENTE</h2><table class="tabla-moderna" border="0" cellspacing="0" cellpadding="0" style="margin:auto; border-collapse:separate; border-radius:12px; font-family:Arial; box-shadow:0 2px 12px #0002; width:90%;">
             <tr>
                 <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">ASUNTO</th>
                 <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(asunto)}</td>
@@ -302,9 +304,6 @@ function copiarHtmlAlPortapapeles(html) {
     if (navigator.clipboard && window.ClipboardItem) {
         const blob = new Blob([html], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob })];
-        navigator.clipboard.write(data).then(() => {
-            alert("El contenido se ha copiado al portapapeles. Pega en el cuerpo del correo.");
-        });
     } else {
         // Fallback: copia como texto plano
         const temp = document.createElement('textarea');
@@ -313,8 +312,24 @@ function copiarHtmlAlPortapapeles(html) {
         temp.select();
         document.execCommand('copy');
         document.body.removeChild(temp);
-        alert("El contenido se ha copiado como texto plano. Pega en el cuerpo del correo.");
     }
+}
+
+function mostrarHtmlEnVentana(html) {
+    const win = window.open("", "_blank");
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Contenido para copiar</title>
+        </head>
+        <body>
+            ${html}
+        </body>
+        </html>
+    `);
+    win.document.close();
 }
 
 function generarMailto(cliente, servicios) {
@@ -322,10 +337,14 @@ function generarMailto(cliente, servicios) {
     const html = generarHtmlTabla(cliente, servicios);
     copiarHtmlAlPortapapeles(html);
 
+    // Abrir el HTML en una ventana nueva para copiar manualmente
+    mostrarHtmlEnVentana(html);
+
     const to = correosClientes[cliente] || '';
     const cc = "tecoymcorpcnoc@claro.com.ec;soporte_empresas@claro.com.ec";
+    const crq = document.getElementById('crq') ? document.getElementById('crq').value : '{{ crq or "" }}';
     const asunto = document.getElementById('asunto') ? document.getElementById('asunto').value : '{{ asunto or "" }}';
-    const subject = asunto;
+    const subject = `TRABAJO PROGRAMADO :: ${crq} ${asunto}`;
     const body = ''; // Vacío para pegar el HTML
 
     const mailtoUrl = `mailto:${encodeURIComponent(to)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

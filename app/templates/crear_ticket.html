@@ -175,8 +175,8 @@
         // Define a global variable to hold client names data
         let clienteNames = [];
     </script>
-    <script type="application/json" id="cliente-names-json">
-        {{ clientes | map(attribute='nombre') | list | tojson | safe }}
+    <script type="application/json" id="clientes-json">
+    {{ clientes | tojson | safe }}
     </script>
 
     <script>
@@ -184,12 +184,18 @@
         console.log("Document ready. Script started.");
 
         // Retrieve and parse JSON data from the script tag
+        // ...existing code...
+        let clientesData = [];
+        let notasPorCliente = {};
+
         try {
-            const clienteNamesJson = $('#cliente-names-json').text();
-            clienteNames = JSON.parse(clienteNamesJson);
-            console.log("Cliente names data loaded:", clienteNames);
+            const clientesJson = document.getElementById('clientes-json').textContent;
+            clientesData = JSON.parse(clientesJson);
+            clientesData.forEach(c => {
+                if (c.nota) notasPorCliente[c.nombre] = c.nota;
+            });
         } catch (e) {
-            console.error("Error parsing cliente names JSON:", e);
+            console.error("Error parsing clientes JSON:", e);
         }
 
         $('.select2').select2({
@@ -269,46 +275,51 @@
             }
         }
 
-        function openMailto() {
-            console.log("openMailto called.");
-            const clienteNombre = clienteSelect.val();
-            const asunto = asuntoInput.val();
-            const sede = sedeInput.val();
-            const tipo = tipoSelect.val();
-            console.log("openMailto - Cliente:", clienteNombre, "Asunto:", asunto, "Sede:", sede, "Tipo:", tipo);
+        // ...existing code...
+function openMailto() {
+    console.log("openMailto called.");
+    const clienteNombre = clienteSelect.val();
+    const asunto = asuntoInput.val();
+    const sede = sedeInput.val();
+    const tipo = tipoSelect.val();
+    console.log("openMailto - Cliente:", clienteNombre, "Asunto:", asunto, "Sede:", sede, "Tipo:", tipo);
 
-            if (!clienteNombre || !asunto) {
-                alert("Por favor, selecciona un cliente y escribe un asunto para preparar el correo.");
-                console.log("openMailto - Validation failed.");
-                return;
+    if (!clienteNombre || !asunto) {
+        alert("Por favor, selecciona un cliente y escribe un asunto para preparar el correo.");
+        return;
+    }
+    // Mostrar nota si existe, respetando saltos de línea
+    if (notasPorCliente[clienteNombre]) {
+        const nota = notasPorCliente[clienteNombre].replace(/\\n/g, '\n');
+        alert("Nota para este cliente:\n" + nota);
+    }
+
+    $.ajax({
+        url: "{{ url_for('ticket_bp.prepare_proactive_email') }}",
+        method: 'POST',
+        data: {
+            cliente_nombre: clienteNombre,
+            asunto: asunto,
+            sede: sede,
+            tipo: tipo
+        },
+        success: function(response) {
+            console.log("AJAX success. Response:", response);
+            if (response.mailto_url) {
+                console.log("Opening mailto URL:", response.mailto_url);
+                window.location.href = response.mailto_url;
+            } else {
+                alert("No se pudo preparar la URL del correo.");
+                console.error("AJAX success but no mailto_url in response.");
             }
-            console.log("openMailto - Validation passed. Sending AJAX request.");
-
-            $.ajax({
-                url: "{{ url_for('ticket_bp.prepare_proactive_email') }}",
-                method: 'POST',
-                data: {
-                    cliente_nombre: clienteNombre,
-                    asunto: asunto,
-                    sede: sede,
-                    tipo: tipo
-                },
-                success: function(response) {
-                    console.log("AJAX success. Response:", response);
-                    if (response.mailto_url) {
-                        console.log("Opening mailto URL:", response.mailto_url);
-                        window.location.href = response.mailto_url;
-                    } else {
-                        alert("No se pudo preparar la URL del correo.");
-                        console.error("AJAX success but no mailto_url in response.");
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error al preparar el correo:", error);
-                    alert("Ocurrió un error al preparar el correo. Por favor, inténtalo de nuevo.");
-                }
-            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error al preparar el correo:", error);
+            alert("Ocurrió un error al preparar el correo. Por favor, inténtalo de nuevo.");
         }
+    });
+}
+
 
         tipoSelect.on('change', handleTipoChange);
         sedeInput.on('input', updateAsuntoAndSelectClient);

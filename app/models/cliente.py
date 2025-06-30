@@ -6,6 +6,8 @@ class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.Text, nullable=True)  # Nuevo campo
+    nota = db.Column(db.Text, nullable=True)  # Nueva columna para la nota
+
 
     tickets = db.relationship('Ticket', back_populates='cliente', lazy=True)
 

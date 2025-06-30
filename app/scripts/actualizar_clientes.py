@@ -58,19 +58,28 @@ def buscar_cliente_existente_o_similar(nombre_csv, clientes_db, min_score=10):
     return best if best_score >= min_score else None
 
 def importar_clientes(csv_path):
+    # ...existing code...
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
-        csv_data = [(row['nombre'].strip(), row['correo'].strip()) for row in reader]
-
+        # Asegura que siempre sea string, incluso si falta la columna o el valor es None
+        csv_data = [
+            (
+                row['nombre'].strip(),
+                row['correo'].strip(),
+                (row.get('nota') or '').strip()
+            )
+            for row in reader
+        ]
+# ...existing code...
     renombrados = 0
     creados = 0
     eliminados = 0
     duplicados_eliminados = 0
-    nombres_en_csv = set(nombre for nombre, _ in csv_data)
+    nombres_en_csv = set(nombre for nombre, _, _ in csv_data)
     ids_renombrados = set()
 
     # Paso 1: Renombrar o actualizar clientes existentes si hay nombre igual o similar en CSV
-    for nombre_csv, correo_csv in csv_data:
+    for nombre_csv, correo_csv, nota_csv in csv_data:
         clientes_db = Cliente.query.all()
         cliente_existente = buscar_cliente_existente_o_similar(nombre_csv, clientes_db)
         if cliente_existente:
@@ -82,11 +91,17 @@ def importar_clientes(csv_path):
             if (cliente_existente.email or '').strip() != correo_csv:
                 print(f"Actualizando correo de '{nombre_csv}' en DB: '{cliente_existente.email}' -> '{correo_csv}'")
                 cliente_existente.email = correo_csv
+            # Actualizar nota si cambió
+            if hasattr(cliente_existente, "nota") and (cliente_existente.nota or '').strip() != (nota_csv or '').strip():
+                print(f"Actualizando nota de '{nombre_csv}' en DB.")
+                cliente_existente.nota = nota_csv
             ids_renombrados.add(cliente_existente.id)
             db.session.commit()
         else:
             # Solo crear si no existe ni similar
             nuevo_cliente = Cliente(nombre=nombre_csv, email=correo_csv)
+            if hasattr(nuevo_cliente, "nota"):
+                nuevo_cliente.nota = nota_csv
             db.session.add(nuevo_cliente)
             creados += 1
             print(f"Cliente '{nombre_csv}' agregado.")

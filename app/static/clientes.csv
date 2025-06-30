@@ -1,4 +1,4 @@
-nombre;correo
+nombre;correo;nota
 THE UNITED NATIONS HIGH COMMISSIONER/ACNUR;"diaza@unhcr.org;godoya@unhcr.org;jacome@unhcr.org"
 AJE ECUADOR S.A./BIG COLA;"jose.maldonado.ec@ajegroup.com;omar.agila.ec@ajegroup.com;octavio.vasconez.ec@ajegroup.com"
 AMBIENSA;rescudero@grupoferretti.com
@@ -19,7 +19,7 @@ COOPERATIVA CHONE;
 COOPERATIVA DAQUILEMA;juliosagnay@coopdaquilema.com
 COOPERATIVA JEP;"turno.infraestructur@jep.coop;infraestructura@jep.coop;soporte@jep.coop"
 COOPERATIVA OSCUS;"dnaranjo@oscus.coop;kredroban@oscus.coop"
-COOPERATIVA SAN FRANCISCO (CSF);"diego.llerena@coac-sanfra.com;mauricio.laura@coac-sanfra.com"
+COOPERATIVA SAN FRANCISCO (CSF);"diego.llerena@coac-sanfra.com;mauricio.laura@coac-sanfra.com";"Enviar proactivo y contactar a Ing. Diego Llerena 0999225749 y si no hay respuesta con el Ing. Mauricio Laura 0984701022."
 DATAFAST;"operadores_gye@datafast.com.ec;networking@datafast.com.ec;overa@datafast.com.ec"
 DECAMERON;"jose.montezuma@decameron.com;miguel.arguello@decameron.com"
 DIFARE;"TI-Telecomunicaciones@GrupoDifare.com;jorge.reyes@GrupoDifare.com;vicente.chalacan@GrupoDifare.com;joffre.ponce@GrupoDifare.com;alicia.aldaz@GrupoDifare.com;bryan.tumbaco@GrupoDifare.com;soporte.ti@grupodifare.com"
@@ -77,8 +77,8 @@ DIR COM FRANCISCO CORZO;
 DIR TH MARCO MIRELES;
 SERVICIO INTERNO;
 COGESCORP;"desarrollo@cogescorp.com;sistemas.gye@cogescorp.com"
-TORRES & TORRES;"infraestructuratyt@torresytorres.com;soportetecnico@torresytorres.com;bbedon@torresytorres.com;phidalgc@claro.com.ec"
+TORRES & TORRES;"infraestructuratyt@torresytorres.com;soportetecnico@torresytorres.com";"Enviar proactivo y llamar según corresponda: \nNivel1: infraestructura (7x24)  0979617410 - soporte técnico (7x24)  0967172351 \nNivel 2: Ing Infraestructura Ronny Muñoz  0991376332 \nNivel 3 : Jefe de Infraestructura Brian Bedon 0939936440"
 SEGURA;"javier.preciado@seguraep.gob.ec;ahmed.perez@seguraep.gob.ec;herman.alarcon@seguraep.gob.ec;paula.gutierrez@seguraep.gob.ec;javier.h@seguraep.gob.ec"
-ECUAVISA/TELEVISORA NACIONAL;csantander@ecuavisa.com
+ECUAVISA/TELEVISORA NACIONAL;"csantander@ecuavisa.com;dgalarza@ecuavisa.com"
 DASE;"epriesv@guayaquil.gov.ec"
 CAN&T;""
