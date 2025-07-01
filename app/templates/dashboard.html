@@ -201,20 +201,41 @@
       </option>
     {% endfor %}
   </select>
+  
 </div>
 
 
+
 </div>
 
 
-<div class="fecha-hora">
-  <h1>TICKETS CNOC</h1>
-  <p>{{ fecha_hoy }} – <span id="hora-actual">{{ hora_actual }}</span></p>
+<div style="width:100%; display: flex; align-items: stretch; justify-content: center; margin-bottom: 30px; background: none; border: none;">
+  <!-- Contenedor izquierdo vacío (mismo tamaño que empleado del mes) -->
+  <div style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
+    <!-- Puedes dejarlo vacío o poner algo decorativo si lo deseas -->
+  </div>
+  <!-- Contenedor central: TICKETS CNOC, fecha, hora y botón -->
+  <div style="flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border-radius: 0; box-shadow: none; min-height: 180px; height: 100%;">
+    <div style="width:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+      <h1 style="text-align:center;">TICKETS CNOC</h1>
+      <p style="text-align:center; font-weight:bold; font-size:1.1em; color:#000;">{{ fecha_hoy }} – <span id="hora-actual">{{ hora_actual }}</span></p>
+      {% if session.get('usuario') %}
+        <button class="crear-btn" onclick="location.href='/crear_ticket'">Crear nuevo ticket</button>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Contenedor derecho: Empleado del mes -->
+  <!-- Contenedor derecho: Empleado del mes -->
+<div class="empleado-mes-box" style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
+  <div style="width: 100%; text-align: center;">
+    <div style="width: 90px; height: 90px; background: #eee; border-radius: 12px; margin: 18px auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid #ffd700;">
+      <img src="{{ url_for('static', filename='images/leonidas2.png') }}" alt="Leonidas Benites" style="width: 100%; height: 100%; object-fit: cover;">
+    </div>
+    <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 2px; color: #b8860b;">Leonidas Benites</div>
+    <div style="font-size: 0.95em; color: #000;">Empleado del mes - Junio</div>
+  </div>
 </div>
-
-{% if session.get('usuario') %}
-  <button class="crear-btn" onclick="location.href='/crear_ticket'">Crear nuevo ticket</button>
-{% endif %}
+</div>
 
 <table>
   <thead>
@@ -432,6 +453,29 @@ setInterval(function() {
 }, 10000); // cada 10 segundos
 </script>
 <div id="custom-tooltip" class="tooltip"></div>
+
+<!-- Agrega esto justo antes de </body> -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const foto = document.querySelector('.empleado-mes-box img');
+  if (foto) {
+    foto.style.cursor = 'pointer';
+    foto.addEventListener('click', function(e) {
+      // Confetti centrado sobre la imagen
+      const rect = foto.getBoundingClientRect();
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: {
+          x: (rect.left + rect.width/2) / window.innerWidth,
+          y: (rect.top + rect.height/2) / window.innerHeight
+        }
+      });
+    });
+  }
+});
+</script>
 </body>
 
 </html>

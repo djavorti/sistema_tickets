@@ -253,51 +253,53 @@ function generarHtmlTabla(cliente, servicios) {
     const logoUrl = "https://1000marcas.net/wp-content/uploads/2021/02/Claro-Logo-1024x580.png";
 
     return `
-    <div>
-        <div style="text-align:center;">
-            <img src="${logoUrl}" alt="Claro" style="height:60px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto;">
-        </div>
-        <h2 style="font-family:Arial; color:#b71c1c; margin-top:0; margin-bottom:30px; text-align:center;">TRABAJO EMERGENTE</h2><table class="tabla-moderna" border="0" cellspacing="0" cellpadding="0" style="margin:auto; border-collapse:separate; border-radius:12px; font-family:Arial; box-shadow:0 2px 12px #0002; width:90%;">
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">ASUNTO</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(asunto)}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">CRQ</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(crq)}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">OBSERVACIÓN</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(observacion)}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DETALLE DE TRABAJOS</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(detalle_trabajos)}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA INICIO</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_inicio}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA FIN</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_fin}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">SERVICIOS AFECTADOS</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${serviciosAfectados}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DURACIÓN DE TRABAJOS</th>
-                <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(duracion)}</td>
-            </tr>
-            <tr>
-                <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">TIEMPO DE INDISPONIBILIDAD</th>
-                <td style="text-align:center;">${escapeHtml(indisponibilidad)}</td>
-            </tr>
-        </table>
-        <p style="font-family:Arial; text-align:center; margin-top:24px;"><i>Nota: Se considerará aceptado el mantenimiento en caso de no contar con una respuesta dentro de las 48 horas luego de realizada la notificación.</i></p>
+<div>
+    <div style="text-align:center;">
+        <img src="${logoUrl}" alt="Claro" style="height:60px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto;">
     </div>
-    `;
+    <h2 style="font-family:Arial; color:#b71c1c; margin-top:0; margin-bottom:30px; text-align:center;">TRABAJO EMERGENTE</h2>
+    <table class="tabla-moderna" border="0" cellspacing="0" cellpadding="0"
+        style="margin:auto; border-collapse:separate; border-radius:12px; font-family:Arial; box-shadow:0 2px 12px #0002; table-layout:auto;">
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">ASUNTO</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(asunto)}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">CRQ</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(crq)}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">OBSERVACIÓN</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(observacion)}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DETALLE DE TRABAJOS</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(detalle_trabajos)}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA INICIO</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_inicio}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">FECHA / HORA FIN</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${fecha_fin}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">SERVICIOS AFECTADOS</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${serviciosAfectados}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">DURACIÓN DE TRABAJOS</th>
+            <td style="border-bottom:1px solid #e0e0e0; text-align:center;">${escapeHtml(duracion)}</td>
+        </tr>
+        <tr>
+            <th class="col-izq" style="background:#f0f0f0; color:#333; font-weight:bold; border-right:1px solid #e0e0e0; text-align:center;">TIEMPO DE INDISPONIBILIDAD</th>
+            <td style="text-align:center;">${escapeHtml(indisponibilidad)}</td>
+        </tr>
+    </table>
+    <p style="font-family:Arial; text-align:center; margin-top:24px;"><i>Nota: Se considerará aceptado el mantenimiento en caso de no contar con una respuesta dentro de las 48 horas luego de realizada la notificación.</i></p>
+</div>
+`;
 }
 
 function copiarHtmlAlPortapapeles(html) {
