@@ -197,6 +197,8 @@
         } catch (e) {
             console.error("Error parsing clientes JSON:", e);
         }
+        // Llenar clienteNames con los nombres de los clientes
+        clienteNames = clientesData.map(c => c.nombre);
 
         $('.select2').select2({
             width: '100%',
