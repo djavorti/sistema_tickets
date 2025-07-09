@@ -12,24 +12,33 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 
 @dashboard_bp.route('/')
 def dashboard():
+    # Verificar si el usuario está en la sesión
     if 'usuario' not in session:
+        return redirect(url_for('auth_bp.login'))
+
+    # Obtener el usuario actual desde la base de datos
+    usuario_actual = Usuario.query.filter_by(usuario=session['usuario']).first()
+    if not usuario_actual:
+        # Redirigir al login si el usuario no existe en la base de datos
         return redirect(url_for('auth_bp.login'))
 
     ahora = datetime.now(zona_ecuador)
     hoy = ahora.date()
     hora_actual = ahora.strftime('%H:%M:%S')
-    usuario_actual = Usuario.query.filter_by(usuario=session['usuario']).first()
 
+    # Obtener tickets activos
     tickets = Ticket.query.filter(or_(
         Ticket.status != 'Terminado',
         and_(Ticket.status == 'Terminado', Ticket.fecha_fin != None, db.func.date(Ticket.fecha_fin) == hoy)
     )).all()
 
+    # Contar tickets por ingeniero
     conteo_tickets = {}
     for ticket in tickets:
         if ticket.asignado_id:
             conteo_tickets[ticket.asignado_id] = conteo_tickets.get(ticket.asignado_id, 0) + 1
 
+    # Obtener lista de ingenieros y sesiones activas
     ingenieros = Usuario.query.filter_by(tipo='ingeniero').all()
     sesiones_activas = {s.usuario_id for s in SesionActiva.query.all()}
 
@@ -47,6 +56,7 @@ def dashboard():
 
     ingenieros_ordenados = ([ingeniero_turno] if ingeniero_turno else []) + logueados + no_logueados
 
+    # Renderizar el dashboard
     return render_template('dashboard.html',
                            ingenieros=ingenieros_ordenados,
                            tickets=tickets,
@@ -55,6 +65,7 @@ def dashboard():
                            nombre_usuario=usuario_actual.nombre,
                            ingeniero_turno_id=ingeniero_turno.id if ingeniero_turno else None)
 
+# Otros endpoints permanecen igual
 from app.routes.ticket_routes import aplicar_cambios_ticket  # Importa la función centralizada
 
 @dashboard_bp.route('/reasignar_ticket', methods=['POST'])
