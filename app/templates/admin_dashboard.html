@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #d32f2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #d32f2f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        /* Estilo para la columna de email */
+        td.email {
+            max-width: 200px; /* Ancho fijo */
+            word-wrap: break-word; /* Ajustar texto */
+            overflow-wrap: break-word; /* Ajustar texto */
+        }
+
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #a00000;
+        }
+
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        input[type="password"] {
+            flex: 1;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .form-actions button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Panel de Administración</h1>
+    </header>
+    <main>
+        <!-- Sección dinámica para usuarios y clientes -->
+        {% for entity_type, entities in {'usuario': usuarios, 'cliente': clientes}.items() %}
+        <section>
+            <h2>{{ entity_type.capitalize() }}s</h2>
+            <!-- Formulario para crear una nueva entidad -->
+            <form action="{{ url_for('admin_bp.create_entity', entity_type=entity_type) }}" method="POST">
+                {% for column in entities[0].__table__.columns if entities and column.name != 'is_deleted' %}
+                {% if column.name != 'id' and column.name != 'password_hash' and column.name != 'de_turno' %}
+                {% if column.name == 'tipo' %}
+                <select name="tipo" required>
+                    <option value="ingeniero">Ingeniero</option>
+                    <option value="jefe">Jefe</option>
+                    <option value="admin">Admin</option>
+                </select>
+                {% else %}
+                <input type="text" name="{{ column.name }}" placeholder="{{ column.name.capitalize() }}" {% if not column.nullable %}required{% endif %}>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% if entity_type == 'usuario' %}
+                <input type="password" name="password" placeholder="Contraseña" required>
+                {% endif %}
+                <div class="form-actions">
+                    <button type="submit">Crear {{ entity_type.capitalize() }}</button>
+                </div>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in entities[0].__table__.columns if entities %}
+                        {% if column.name != 'password_hash' %}
+                        <th>{{ column.name.capitalize() }}</th>
+                        {% endif %}
+                        {% endfor %}
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entity in entities %}
+                    <tr>
+                        {% for column in entity.__table__.columns %}
+                        {% if column.name != 'password_hash' %}
+                        <td class="{% if column.name == 'email' %}email{% endif %}">{{ getattr(entity, column.name) }}</td>
+                        {% endif %}
+                        {% endfor %}
+                        <td>
+                            {% if entity.usuario != session.get('usuario') %}
+                            <a href="{{ url_for('admin_bp.edit_entity', entity_type=entity_type, entity_id=entity.id) }}">
+                                <button type="button">Editar</button>
+                            </a>
+                            <button type="button" onclick="confirmDelete('{{ url_for('admin_bp.delete_entity', entity_type=entity_type, entity_id=entity.id) }}')">Eliminar</button>
+                            {% else %}
+                            <span style="color: gray;">No disponible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endfor %}
+    </main>
+    <script>
+        function confirmDelete(url) {
+            if (confirm("¿Está seguro de que desea eliminar este elemento?")) {
+                fetch(url, { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert("Error al eliminar el elemento.");
+                        }
+                    })
+                    .catch(() => alert("Error de conexión."));
+            }
+        }
+    </script>
+
+<section>
+    <h2>Configuración</h2>
+    <form action="{{ url_for('admin_bp.actualizar_configuracion') }}" method="POST">
+        <label for="empleado_mes">Mostrar Empleado del Mes:</label>
+        <input type="hidden" name="clave" value="empleado_mes_visible">
+        <input type="hidden" name="valor" value="false"> <!-- Valor por defecto si el checkbox no está marcado -->
+        <input type="checkbox" id="empleado_mes" name="valor" value="true" onclick="this.previousElementSibling.value = this.checked ? 'true' : 'false';" {% if configuracion['empleado_mes_visible'] == 'true' %}checked{% endif %}>
+        <button type="submit">Guardar</button>
+    </form>
+</section>
+<section>
+    <h2>Editar Empleado del Mes</h2>
+    <form action="{{ url_for('admin_bp.actualizar_empleado_mes') }}" method="POST">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ configuracion['empleado_mes_nombre'] }}" required>
+        
+        <label for="foto">Ruta de la Foto:</label>
+        <input type="text" id="foto" name="foto" value="{{ configuracion['empleado_mes_foto'] }}" required>
+        
+        <button type="submit">Guardar</button>
+    </form>
+</section>
+</body>
+</html>

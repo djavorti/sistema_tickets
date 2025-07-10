@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from app.config import Config
 
+from app.models.configuracion import Configuracion
 from app.models.usuario import Usuario
 from app.models.ticket import Ticket
 from app.models.cliente import Cliente
@@ -12,6 +13,7 @@ from app.models.sesion_activa import SesionActiva
 from app.utils import zona_ecuador
 import sys
 from pytz import timezone
+from jinja2 import Environment
 
 
 
@@ -21,6 +23,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    app.jinja_env.globals.update(getattr=getattr)
     migrate.init_app(app, db)
 
     # Importar blueprints
@@ -28,12 +31,15 @@ def create_app():
     from app.routes.ticket_routes import ticket_bp
     from app.routes.dashboard_routes import dashboard_bp
     from app.routes.programado_routes import programado_bp
+    from app.routes.admin_routes import admin_bp
     
     app.register_blueprint(programado_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(ticket_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(admin_bp)
 
+    
     
 
     from app.routes.auth_routes import reasignar_tickets_pendientes_al_turno
@@ -62,5 +68,12 @@ def create_app():
                         session.clear()
                         flash('Sesión cerrada por inactividad. Por favor, inicia sesión nuevamente.')
                         return redirect(url_for('auth_bp.login'))
+    
+    # Inyectar configuraciones globales en las plantillas
+    @app.context_processor
+    def inject_configuracion():
+        configuraciones = Configuracion.query.all()
+        return {'configuracion': {conf.clave: conf.valor for conf in configuraciones}}
+
 
     return app

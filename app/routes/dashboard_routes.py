@@ -17,7 +17,8 @@ def dashboard():
         return redirect(url_for('auth_bp.login'))
 
     # Obtener el usuario actual desde la base de datos
-    usuario_actual = Usuario.query.filter_by(usuario=session['usuario']).first()
+    usuario_actual = Usuario.query.filter_by(usuario=session['usuario'], is_deleted=False).first()
+
     if not usuario_actual:
         # Redirigir al login si el usuario no existe en la base de datos
         return redirect(url_for('auth_bp.login'))
@@ -39,7 +40,7 @@ def dashboard():
             conteo_tickets[ticket.asignado_id] = conteo_tickets.get(ticket.asignado_id, 0) + 1
 
     # Obtener lista de ingenieros y sesiones activas
-    ingenieros = Usuario.query.filter_by(tipo='ingeniero').all()
+    ingenieros = Usuario.query.filter_by(tipo='ingeniero', is_deleted=False).all()
     sesiones_activas = {s.usuario_id for s in SesionActiva.query.all()}
 
     for ing in ingenieros:

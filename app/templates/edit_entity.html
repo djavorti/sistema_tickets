@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar {{ entity_type }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #d32f2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        input, select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #a00000;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Editar {{ entity_type }}</h1>
+    </header>
+    <main>
+        <form action="{{ url_for('admin_bp.edit_entity', entity_type=entity_type, entity_id=entity.id) }}" method="POST">
+            {% for field in fields %}
+                {% if field.name != 'id' and field.name != 'password_hash' and field.name != 'de_turno' and field.name != 'is_deleted'%}
+                {% if field.name == 'tipo' %}
+                <label for="tipo">Tipo</label>
+                <select name="tipo" id="tipo" required>
+                    <option value="ingeniero" {% if field.value == 'ingeniero' %}selected{% endif %}>Ingeniero</option>
+                    <option value="jefe" {% if field.value == 'jefe' %}selected{% endif %}>Jefe</option>
+                    <option value="admin" {% if field.value == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+                {% else %}
+                <label for="{{ field.name }}">{{ field.label }}</label>
+                <input type="{{ field.type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ field.value }}" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+                {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% if entity_type == 'usuario' %}
+            <label>
+                <input type="checkbox" id="edit-password" onclick="togglePasswordField()"> Editar Contraseña
+            </label>
+            <div id="password-field" style="display: none;">
+                <label for="password">Nueva Contraseña</label>
+                <input type="password" name="password" id="password" placeholder="Nueva Contraseña">
+            </div>
+            {% endif %}
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </main>
+    <script>
+        function togglePasswordField() {
+            const checkbox = document.getElementById('edit-password');
+            const passwordField = document.getElementById('password-field');
+            passwordField.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

@@ -11,6 +11,7 @@ class Usuario(db.Model):
     nombre = db.Column(db.String(100), nullable=True)
     apellido = db.Column(db.String(100), nullable=True)
     de_turno = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)  # Campo para soft delete
 
     tickets = db.relationship('Ticket', foreign_keys='Ticket.usuario_id', back_populates='usuario')
     historial = db.relationship('Historial', back_populates='usuario')
@@ -20,5 +21,3 @@ class Usuario(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
-

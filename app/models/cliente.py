@@ -5,9 +5,9 @@ class Cliente(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.Text, nullable=True)  # Nuevo campo
-    nota = db.Column(db.Text, nullable=True)  # Nueva columna para la nota
-
+    email = db.Column(db.Text, nullable=True)
+    nota = db.Column(db.Text, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False)  # Campo para soft delete
 
     tickets = db.relationship('Ticket', back_populates='cliente', lazy=True)
 

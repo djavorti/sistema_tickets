@@ -62,7 +62,7 @@ def aplicar_cambios_ticket(ticket, usuario_actual, cambios_dict):
     if 'cliente' in cambios_dict and cambios_dict['cliente'] and cambios_dict['cliente'] != (ticket.cliente.nombre if ticket.cliente else ""):
         anterior_cliente = ticket.cliente.nombre if ticket.cliente else ""
         cambios.append(f"Cliente: '{anterior_cliente}' → '{cambios_dict['cliente']}'")
-        ticket.cliente = Cliente.query.filter_by(nombre=cambios_dict['cliente']).first()
+        ticket.cliente = Cliente.query.filter_by(nombre=cambios_dict['cliente'], is_deleted=False).first()
 
     # --- Asignado ---
     if 'asignado' in cambios_dict and cambios_dict['asignado']:
@@ -128,7 +128,7 @@ def crear_ticket():
         cliente_nombre = request.form['cliente']
         # fecha_inicio se genera en el servidor al momento de la creación
 
-        cliente = Cliente.query.filter_by(nombre=cliente_nombre).first()
+        cliente = Cliente.query.filter_by(nombre=cliente_nombre, is_deleted=False).first()
 
         # Lógica para asignar el ticket:
         # Si el usuario logueado NO es ingeniero O es ingeniero de turno, puede elegir asignado.
@@ -137,7 +137,7 @@ def crear_ticket():
              # Usuario puede elegir asignado (si el campo 'asignado' existe en el form)
             asignado_id = request.form.get('asignado') # Usar .get() para evitar KeyError si el campo no está presente
             if asignado_id:
-                 asignado = Usuario.query.get(asignado_id)
+                 asignado = Usuario.query.filter_by(id=asignado_id, is_deleted=False).first() if asignado_id else ingeniero_turno
             else:
                  # Esto podría pasar si el campo asignado no se muestra pero el usuario es ingeniero de turno
                  # En este caso, se asigna a sí mismo si es ingeniero de turno, o al de turno si no es él.
@@ -211,12 +211,12 @@ def crear_ticket():
         return redirect(url_for('dashboard_bp.dashboard'))
 
     # GET: preparar formulario
-    clientes = Cliente.query.all()
+    clientes = Cliente.query.filter_by(is_deleted=False).all()
     clientes_json = [
         {"nombre": c.nombre, "nota": c.nota or ""}
         for c in clientes
     ]
-    ingenieros = Usuario.query.filter_by(tipo='ingeniero').all()
+    ingenieros = Usuario.query.filter_by(tipo='ingeniero', is_deleted=False).all()
 
     # Generar un ID provisional solo para mostrar en el formulario GET
     hoy = datetime.now(zona_ecuador)
@@ -262,7 +262,7 @@ def prepare_proactive_email():
     if not cliente_nombre or not asunto:
          return jsonify({'error': 'Faltan datos del cliente o asunto'}), 400
 
-    cliente = Cliente.query.filter_by(nombre=cliente_nombre).first()
+    cliente = Cliente.query.filter_by(nombre=cliente_nombre, is_deleted=False).first()
     if not cliente:
         return jsonify({'error': 'Cliente no encontrado'}), 404
 
@@ -309,7 +309,7 @@ def editar_ticket(ticket_id):
         return redirect(url_for('auth_bp.login'))
 
     ticket = Ticket.query.get_or_404(ticket_id)
-    clientes = Cliente.query.all()
+    clientes = Cliente.query.filter_by(is_deleted=False).all()
     ingenieros = Usuario.query.filter_by(tipo='ingeniero').all()
     historial = Historial.query.filter_by(ticket_id=ticket_id).order_by(Historial.fecha_hora.desc()).all()
 

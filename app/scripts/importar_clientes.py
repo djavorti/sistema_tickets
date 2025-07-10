@@ -5,14 +5,18 @@ from app import create_app
 
 def importar_clientes(csv_path):
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = csv.DictReader(csvfile, delimiter=';')  # Usar el delimitador correcto (;)
         for row in reader:
             # Verificamos si ya existe un cliente con ese nombre para evitar duplicados
             if Cliente.query.filter_by(nombre=row['nombre']).first():
                 print(f"Cliente '{row['nombre']}' ya existe. Saltando.")
                 continue
 
-            cliente = Cliente(nombre=row['nombre'])
+            cliente = Cliente(
+                nombre=row['nombre'],
+                email=row['correo'],  # Usar la columna 'correo' para el campo email
+                nota=row['nota']      # Usar la columna 'nota' para el campo nota
+            )
             db.session.add(cliente)
         
         db.session.commit()
