@@ -137,6 +137,10 @@ def actualizar_configuracion():
 def actualizar_empleado_mes():
     nombre = request.form.get('nombre')
     foto = request.form.get('foto')
+    texto = request.form.get('texto')  # Nuevo campo para el texto debajo del nombre
+
+    # Construir la ruta completa de la imagen
+    ruta_foto = f"{foto}"
 
     # Actualizar el nombre
     configuracion_nombre = Configuracion.query.filter_by(clave='empleado_mes_nombre').first()
@@ -149,10 +153,18 @@ def actualizar_empleado_mes():
     # Actualizar la foto
     configuracion_foto = Configuracion.query.filter_by(clave='empleado_mes_foto').first()
     if configuracion_foto:
-        configuracion_foto.valor = foto
+        configuracion_foto.valor = ruta_foto
     else:
-        configuracion_foto = Configuracion(clave='empleado_mes_foto', valor=foto)
+        configuracion_foto = Configuracion(clave='empleado_mes_foto', valor=ruta_foto)
         db.session.add(configuracion_foto)
+
+    # Actualizar el texto debajo del nombre
+    configuracion_texto = Configuracion.query.filter_by(clave='empleado_mes_texto').first()
+    if configuracion_texto:
+        configuracion_texto.valor = texto
+    else:
+        configuracion_texto = Configuracion(clave='empleado_mes_texto', valor=texto)
+        db.session.add(configuracion_texto)
 
     db.session.commit()
     flash("Empleado del Mes actualizado correctamente.", "success")

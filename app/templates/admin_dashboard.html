@@ -128,60 +128,60 @@
             <h2>{{ entity_type.capitalize() }}s</h2>
             <!-- Formulario para crear una nueva entidad -->
             <form action="{{ url_for('admin_bp.create_entity', entity_type=entity_type) }}" method="POST">
-                {% for column in entities[0].__table__.columns if entities and column.name != 'is_deleted' %}
-                {% if column.name != 'id' and column.name != 'password_hash' and column.name != 'de_turno' %}
-                {% if column.name == 'tipo' %}
-                <select name="tipo" required>
-                    <option value="ingeniero">Ingeniero</option>
-                    <option value="jefe">Jefe</option>
-                    <option value="admin">Admin</option>
-                </select>
-                {% else %}
-                <input type="text" name="{{ column.name }}" placeholder="{{ column.name.capitalize() }}" {% if not column.nullable %}required{% endif %}>
-                {% endif %}
-                {% endif %}
-                {% endfor %}
-                {% if entity_type == 'usuario' %}
-                <input type="password" name="password" placeholder="Contraseña" required>
-                {% endif %}
-                <div class="form-actions">
-                    <button type="submit">Crear {{ entity_type.capitalize() }}</button>
-                </div>
-            </form>
+    {% for column in entities[0].__table__.columns if entities and column.name not in ['is_deleted', 'de_turno'] %}
+    {% if column.name != 'id' and column.name != 'password_hash' %}
+    {% if column.name == 'tipo' %}
+    <select name="tipo" required>
+        <option value="ingeniero">Ingeniero</option>
+        <option value="jefe">Jefe</option>
+        <option value="admin">Admin</option>
+    </select>
+    {% else %}
+    <input type="text" name="{{ column.name }}" placeholder="{{ column.name.capitalize() }}" {% if not column.nullable %}required{% endif %}>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+    {% if entity_type == 'usuario' %}
+    <input type="password" name="password" placeholder="Contraseña" required>
+    {% endif %}
+    <div class="form-actions">
+        <button type="submit">Crear {{ entity_type.capitalize() }}</button>
+    </div>
+</form>
 
             <table>
-                <thead>
-                    <tr>
-                        {% for column in entities[0].__table__.columns if entities %}
-                        {% if column.name != 'password_hash' %}
-                        <th>{{ column.name.capitalize() }}</th>
-                        {% endif %}
-                        {% endfor %}
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entity in entities %}
-                    <tr>
-                        {% for column in entity.__table__.columns %}
-                        {% if column.name != 'password_hash' %}
-                        <td class="{% if column.name == 'email' %}email{% endif %}">{{ getattr(entity, column.name) }}</td>
-                        {% endif %}
-                        {% endfor %}
-                        <td>
-                            {% if entity.usuario != session.get('usuario') %}
-                            <a href="{{ url_for('admin_bp.edit_entity', entity_type=entity_type, entity_id=entity.id) }}">
-                                <button type="button">Editar</button>
-                            </a>
-                            <button type="button" onclick="confirmDelete('{{ url_for('admin_bp.delete_entity', entity_type=entity_type, entity_id=entity.id) }}')">Eliminar</button>
-                            {% else %}
-                            <span style="color: gray;">No disponible</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <thead>
+        <tr>
+            {% for column in entities[0].__table__.columns if entities and column.name not in ['is_deleted', 'de_turno'] %}
+            {% if column.name != 'password_hash' %}
+            <th>{{ column.name.capitalize() }}</th>
+            {% endif %}
+            {% endfor %}
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entity in entities %}
+        <tr>
+            {% for column in entity.__table__.columns if column.name not in ['is_deleted', 'de_turno'] %}
+            {% if column.name != 'password_hash' %}
+            <td class="{% if column.name == 'email' %}email{% endif %}">{{ getattr(entity, column.name) }}</td>
+            {% endif %}
+            {% endfor %}
+            <td>
+                {% if entity.usuario != session.get('usuario') %}
+                <a href="{{ url_for('admin_bp.edit_entity', entity_type=entity_type, entity_id=entity.id) }}">
+                    <button type="button">Editar</button>
+                </a>
+                <button type="button" onclick="confirmDelete('{{ url_for('admin_bp.delete_entity', entity_type=entity_type, entity_id=entity.id) }}')">Eliminar</button>
+                {% else %}
+                <span style="color: gray;">No disponible</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
         </section>
         {% endfor %}
     </main>
@@ -217,11 +217,15 @@
         <label for="nombre">Nombre:</label>
         <input type="text" id="nombre" name="nombre" value="{{ configuracion['empleado_mes_nombre'] }}" required>
         
-        <label for="foto">Ruta de la Foto:</label>
+        <label for="foto">Nombre de la Foto:</label>
         <input type="text" id="foto" name="foto" value="{{ configuracion['empleado_mes_foto'] }}" required>
+        
+        <label for="texto">Texto debajo del nombre:</label>
+        <input type="text" id="texto" name="texto" value="{{ configuracion['empleado_mes_texto'] }}" required>
         
         <button type="submit">Guardar</button>
     </form>
+</section>
 </section>
 </body>
 </html>

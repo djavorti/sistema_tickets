@@ -230,10 +230,10 @@
 <div class="empleado-mes-box" style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
   <div style="width: 100%; text-align: center;">
     <div style="width: 90px; height: 90px; background: #eee; border-radius: 12px; margin: 18px auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid #ffd700;">
-      <img src="{{ url_for('static', filename=configuracion['empleado_mes_foto']) }}" alt={{ configuracion['empleado_mes_nombre'] }}" style="width: 100%; height: 100%; object-fit: cover;">
+      <img src="{{ url_for('static', filename='images/' ~ configuracion['empleado_mes_foto']) }}" alt="{{ configuracion['empleado_mes_nombre'] }}" style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 2px; color: #b8860b;">{{ configuracion['empleado_mes_nombre'] }}</div>
-    <div style="font-size: 0.95em; color: #000;">Empleado del mes - Junio</div>
+    <div style="font-size: 0.95em; color: #000;">{{ configuracion['empleado_mes_texto'] }}</div>
   </div>
 </div>
 {% else %}
