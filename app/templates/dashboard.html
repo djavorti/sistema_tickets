@@ -172,7 +172,205 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   pointer-events: none;
 }
+  /* Estilos para el modo oscuro */
+  
+
+
+  .modo-oscuro .leyenda {
+    background-color: #1e1e1e; /* Fondo oscuro para la leyenda */
+    color: #ffffff;
+    border-color: #444444;
+  }
+
+  /* Estilo para el ingeniero de turno */
+  .ingeniero-turno {
+    background-color: #f9f0c1; /* Amarillo para modo claro */
+    color: #000; /* Texto negro */
+  }
+
+  .modo-oscuro .ingeniero-turno {
+    background-color: #ff8c00; /* Naranja oscuro para modo oscuro */
+    color: #ffffff; /* Texto blanco */
+  }
+
+  .modo-oscuro {
+    background-color: #121212;
+    color: #ffffff;
+  }
+
+  .modo-oscuro h1,
+  .modo-oscuro h3,
+  .modo-oscuro th,
+  .modo-oscuro td {
+    color: #ffffff;
+  }
+
+  .modo-oscuro .header-bar {
+    background-color: #333333;
+  }
+
+  /* Estilo para la tabla en modo oscuro */
+  .modo-oscuro table {
+    background-color: #1e1e1e; /* Fondo oscuro para la tabla */
+    border-color: #444444;
+  }
+
+  .modo-oscuro th {
+    background-color: #444444; /* Fondo oscuro para los encabezados */
+    color: #ffffff;
+  }
+
+  .modo-oscuro td {
+    background-color: #1e1e1e; /* Fondo oscuro para las celdas */
+    color: #ffffff;
+  }
+
+  /* Estilo para la fecha y hora */
+  .fecha-hora {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #000; /* Texto negro por defecto */
+  }
+
+  /* Estilo para la fecha y hora en modo oscuro */
+  .modo-oscuro .fecha-hora {
+    color: #ffffff; /* Texto blanco en modo oscuro */
+  }
+
+  /* Estilo para el botón de "Crear Ticket" */
+  .crear-btn {
+    background-color: #d32f2f; /* Rojo */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+
+  .crear-btn:hover {
+    background-color: #a00000; /* Rojo oscuro */
+  }
+
+  /* Estilos generales */
+  .contenedor-principal {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+  .contenedor-izquierdo,
+  .contendor-derecho{
+    flex: 1;
+    min-width: 260px;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 24px;
+    height: 100%;
+  }
+
+  .contenedor-central {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 24px;
+    height: 100%;
+  }
+
+  .contenido-central {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+
+  /* Estilos para modo oscuro */
+  .modo-oscuro .contenedor-principal {
+    background-color: #121212;
+    color: #ffffff;
+  }
+
+  /* Estilos para modo claro */
+  .contenedor-principal {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  .empleado-mes-box {
+    flex: 1;
+    min-width: 260px;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffd700; /* Borde dorado */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: none;
+    padding: 10px;
+    height: 100%; /* Igualar el alto al de los otros contenedores */
+    background-color: #fff; /* Fondo blanco */
+  }
+
+  .empleado-mes-contenido {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .empleado-mes-imagen {
+    width: 80px; /* Tamaño reducido */
+    height: 80px;
+    border-radius: 50%; /* Imagen circular */
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 3px solid #ffd700; /* Borde dorado alrededor de la imagen */
+  }
+
+  .empleado-mes-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajustar la imagen al contenedor */
+  }
+
+  .empleado-mes-nombre {
+    font-weight: bold;
+    font-size: 1em;
+    color: #b8860b; /* Color dorado oscuro */
+    margin-bottom: 5px;
+  }
+
+  .empleado-mes-texto {
+    font-size: 0.9em;
+    color: #000; /* Texto negro */
+  }
+
 </style>
+<script>
+    // Detectar la hora y aplicar la clase modo-oscuro antes de que la página se cargue
+    const ahora = new Date();
+    const hora = ahora.getHours();
+    if (hora >= 0 && hora < 6) {
+      document.documentElement.classList.add('modo-oscuro'); // Aplicar al <html> para evitar parpadeo
+    }
+  </script>
 </head>
 <body>
 
@@ -209,39 +407,39 @@
 </div>
 
 
-<div style="width:100%; display: flex; align-items: stretch; justify-content: center; margin-bottom: 30px; background: none; border: none;">
+<div class="contenedor-principal">
   <!-- Contenedor izquierdo vacío (mismo tamaño que empleado del mes) -->
-  <div style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
-    <!-- Puedes dejarlo vacío o poner algo decorativo si lo deseas -->
+  <div class="contenedor-izquierdo">
+    <!-- Contenedor izquierdo: Últimos ingenieros de turno y contador -->
   </div>
+
   <!-- Contenedor central: TICKETS CNOC, fecha, hora y botón -->
-  <div style="flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border-radius: 0; box-shadow: none; min-height: 180px; height: 100%;">
-    <div style="width:100%; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-      <h1 style="text-align:center;">TICKETS CNOC</h1>
-      <p style="text-align:center; font-weight:bold; font-size:1.1em; color:#000;">{{ fecha_hoy }} – <span id="hora-actual">{{ hora_actual }}</span></p>
+  <div class="contenedor-central">
+    <div class="contenido-central">
+      <h1>TICKETS CNOC</h1>
+      <p class="fecha-hora">{{ fecha_hoy }} – <span id="hora-actual">{{ hora_actual }}</span></p>
       {% if session.get('usuario') %}
         <button class="crear-btn" onclick="location.href='/crear_ticket'">Crear nuevo ticket</button>
       {% endif %}
     </div>
   </div>
+
   <!-- Contenedor derecho: Empleado del mes -->
-  <!-- Contenedor derecho: Empleado del mes -->
-{% if configuracion['empleado_mes_visible'] == 'true' %}
-<div class="empleado-mes-box" style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
-  <div style="width: 100%; text-align: center;">
-    <div style="width: 90px; height: 90px; background: #eee; border-radius: 12px; margin: 18px auto 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid #ffd700;">
-      <img src="{{ url_for('static', filename='images/' ~ configuracion['empleado_mes_foto']) }}" alt="{{ configuracion['empleado_mes_nombre'] }}" style="width: 100%; height: 100%; object-fit: cover;">
+  {% if configuracion['empleado_mes_visible'] == 'true' %}
+  <div class="empleado-mes-box">
+    <div class="empleado-mes-contenido">
+      <div class="empleado-mes-imagen">
+        <img src="{{ url_for('static', filename='images/' ~ configuracion['empleado_mes_foto']) }}" alt="{{ configuracion['empleado_mes_nombre'] }}">
+      </div>
+      <div class="empleado-mes-nombre">{{ configuracion['empleado_mes_nombre'] }}</div>
+      <div class="empleado-mes-texto">{{ configuracion['empleado_mes_texto'] }}</div>
     </div>
-    <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 2px; color: #b8860b;">{{ configuracion['empleado_mes_nombre'] }}</div>
-    <div style="font-size: 0.95em; color: #000;">{{ configuracion['empleado_mes_texto'] }}</div>
   </div>
-</div>
-{% else %}
-  <!-- Contenedor vacío -->
-  <div style="flex:1; max-width:260px; min-width:220px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 0; box-shadow: none; padding: 0 24px; height: 100%;">
+  {% else %}
+  <div class="contendor-derecho">
     <!-- Sin contenido -->
   </div>
-{% endif %}
+  {% endif %}
 </div>
 
 <table>
@@ -252,44 +450,44 @@
     </tr>
   </thead>
   <tbody id="tabla-ingenieros">
-    {% for ingeniero in ingenieros %}
-    <tr
-      class="{% if loop.index0 == 0 %}primero{% elif not ingeniero.es_logueado %}inactivo{% endif %}"
-      draggable="true"
-      ondragstart="filaDragStart(event)"
-      ondragover="filaDragOver(event)"
-      ondragleave="filaDragLeave(event)"
-      ondrop="filaDrop(event)"
-    >
-      <td>{{ ingeniero.nombre or ingeniero.usuario }}</td>
-      <td ondragover="permitirSoltar(event)" ondrop="soltarTicket(event, '{{ ingeniero.usuario }}')">
-        {% set tickets_ingeniero = tickets | selectattr('asignado_id', 'equalto', ingeniero.id) | list %}
-        {% set tickets_terminados = tickets_ingeniero | selectattr('status', 'equalto', 'Terminado') | sort(attribute='fecha_inicio') | list %}
-        {% set tickets_pendientes = tickets_ingeniero | selectattr('status', 'equalto', 'Pendiente') | sort(attribute='fecha_inicio') | list %}
-        {% set tickets_ordenados = tickets_terminados + tickets_pendientes %}
-        {% for ticket in tickets_ordenados %}
-          {% set clase = 'pendiente' if ticket.status == 'Pendiente' else 'terminado' %}
-          <div
-  class="cuadro {{ clase }} {% if session.get('usuario') %}editable{% endif %}"
-  data-status="{{ ticket.status }}"
-  data-asunto="{{ ticket.asunto }}"
-  data-cliente="{{ ticket.cliente.nombre }}"
-  data-tt="{{ ticket.tt_remedy }}"
-  {% if session.get('usuario') %}
+  {% for ingeniero in ingenieros %}
+  <tr
+    class="{% if ingeniero.id == ingeniero_turno_id %}ingeniero-turno{% elif not ingeniero.es_logueado %}inactivo{% endif %}"
     draggable="true"
-    ondragstart="arrastrarTicket(event, '{{ ticket.id }}')"
-    onclick="location.href='/editar_ticket/{{ ticket.id }}'"
-  {% endif %}
->
-            <span style="display:block; font-weight:bold;">
-              {% if ticket.tipo == 'Proactivo' %}P{% elif ticket.tipo == 'Reactivo' %}R{% elif ticket.tipo == 'Requerimiento' %}Q{% endif %}
-            </span>
-          </div>
-        {% endfor %}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
+    ondragstart="filaDragStart(event)"
+    ondragover="filaDragOver(event)"
+    ondragleave="filaDragLeave(event)"
+    ondrop="filaDrop(event)"
+  >
+    <td>{{ ingeniero.nombre or ingeniero.usuario }}</td>
+    <td ondragover="permitirSoltar(event)" ondrop="soltarTicket(event, '{{ ingeniero.usuario }}')">
+      {% set tickets_ingeniero = tickets | selectattr('asignado_id', 'equalto', ingeniero.id) | list %}
+      {% set tickets_terminados = tickets_ingeniero | selectattr('status', 'equalto', 'Terminado') | sort(attribute='fecha_inicio') | list %}
+      {% set tickets_pendientes = tickets_ingeniero | selectattr('status', 'equalto', 'Pendiente') | sort(attribute='fecha_inicio') | list %}
+      {% set tickets_ordenados = tickets_terminados + tickets_pendientes %}
+      {% for ticket in tickets_ordenados %}
+        {% set clase = 'pendiente' if ticket.status == 'Pendiente' else 'terminado' %}
+        <div
+          class="cuadro {{ clase }} {% if session.get('usuario') %}editable{% endif %}"
+          data-status="{{ ticket.status }}"
+          data-asunto="{{ ticket.asunto }}"
+          data-cliente="{{ ticket.cliente.nombre }}"
+          data-tt="{{ ticket.tt_remedy }}"
+          {% if session.get('usuario') %}
+            draggable="true"
+            ondragstart="arrastrarTicket(event, '{{ ticket.id }}')"
+            onclick="location.href='/editar_ticket/{{ ticket.id }}'"
+          {% endif %}
+        >
+          <span style="display:block; font-weight:bold;">
+            {% if ticket.tipo == 'Proactivo' %}P{% elif ticket.tipo == 'Reactivo' %}R{% elif ticket.tipo == 'Requerimiento' %}Q{% endif %}
+          </span>
+        </div>
+      {% endfor %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
 </table>
 
 <div class="leyenda">
@@ -391,21 +589,29 @@
   }
 </script>
 <script>
-  document.getElementById('selector-turno').addEventListener('change', function () {
+document.getElementById('selector-turno').addEventListener('change', function () {
+    console.log("Selector cambiado. Nuevo turno ID:", this.value); // Depuración
     fetch('/cambiar_turno', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ usuario_id: this.value })
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ usuario_id: this.value })
     }).then(response => {
-      if (response.ok) {
-        location.reload(); // refrescar para ver el nuevo orden
-      } else {
-        alert("Error al cambiar de turno.");
-      }
+        if (response.ok) {
+            console.log("Turno cambiado correctamente."); // Depuración
+            location.reload(); // Refrescar para ver el nuevo orden
+        } else {
+            response.json().then(data => {
+                console.error("Error al cambiar de turno:", data.error); // Depuración
+                alert(data.error || "Error al cambiar de turno.");
+            });
+        }
+    }).catch(error => {
+        console.error("Error de conexión con el servidor:", error); // Depuración
+        alert("Error de conexión con el servidor.");
     });
-  });
+});
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -457,6 +663,12 @@ setInterval(function() {
         window.location.href = "{{ url_for('auth_bp.logout') }}";
       }
     });
+
+  fetch('/dashboard')
+    .then(response => response.json())
+    .then(data => {
+      document.querySelector('.contador-tickets').textContent = data.contador_tickets;
+    });
 }, 10000); // cada 10 segundos
 </script>
 <div id="custom-tooltip" class="tooltip"></div>
@@ -483,6 +695,26 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+
+<script>
+  function aplicarModoOscuro() {
+    const ahora = new Date();
+    const hora = ahora.getHours();
+
+    // Activar modo oscuro entre las 00:00 y las 7:00 AM
+    if (hora >= 0 && hora < 6) {
+      document.body.classList.add('modo-oscuro');
+    } else {
+      document.body.classList.remove('modo-oscuro');
+    }
+  }
+
+  // Ejecutar la función al cargar la página y cada minuto
+  aplicarModoOscuro();
+  setInterval(aplicarModoOscuro, 60000); // Verificar cada minuto
+</script>
+
+
 </body>
 
 </html>
